@@ -42,22 +42,63 @@ label_debug = Label(pos_hint={"x": 0.2, "y": 0.2},
 
 class Canvas3D(FloatLayout):
     adding_queue = []
+    '''adding_queue_doc
+    '''
+
     translate = ListProperty([0.0, 0.0, 0.0])
+    ''' Translate all children widgets around the value
+    '''
+
     rotate = ListProperty([0.0, 0.0, 0.0, 0.0])
+    ''' Rotate all children widgets around the value
+    '''
+
     _translate = None
+
+    ''' Shadow FBO translate value
+    '''
+
     _translate_fbo = None
+    ''' Shadow FBO translate value
+    '''
+
     _translate_picking = None
+    ''' Picking FBO translate value
+    '''
+
     _translate_motion = None
+    ''' Motion FBO translate value
+    '''
+
     nodes = []
+    ''' Nodes list
+    '''
+
     shadow = True
+    ''' Shadow state, at now always the shadows is enable
+    '''
+
     picking = True
+    ''' Allow picking. At now always the picking is enable
+    '''
+
     fbo = None
-    anim = 0.0
+    ''' Shadow FBO
+    '''
+
     fbo_list = {}
+    ''' List of elements attached to a Mesh
+    '''
+
     shadow_threshold = 1.0
+    ''' Shadow Distance
+    '''
+
     _update_fbo = 0
+
     current_id = 0.01
-    last_touch_pos = [-1, -1, 0, 0]
+    '''Mesh ID counter
+    '''
 
     def __init__(self, **kwargs):
         from random import random
@@ -335,8 +376,6 @@ class Canvas3D(FloatLayout):
         if self.picking_fbo:
             self.picking_fbo['projection_mat'] = proj
 
-        import random
-
         self.alpha += 10 * time
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
@@ -441,7 +480,6 @@ class Canvas3D(FloatLayout):
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
-                #return self.fbo_list[float_str].dispatch("on_touch_down", touch)
                 touch.ud["pick_value"] = float_str
                 return self.fbo_list[float_str].on_touch_down(t_touch)
         return True
@@ -516,13 +554,4 @@ class Canvas3D(FloatLayout):
                 pass
 
         return True
-
-
-class RendererApp(App):
-    def build(self):
-        return Renderer()
-
-
-if __name__ == "__main__":
-    RendererApp().run()
 
