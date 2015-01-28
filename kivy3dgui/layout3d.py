@@ -30,10 +30,24 @@ from kivy.graphics import *
 
 class Layout3D(FloatLayout):
     canvas3d = None
+    '''canvas3d
+    '''
+
     post_processing = BooleanProperty(False)
+    '''post_processing
+    '''
+
     shadow = BooleanProperty(True)
+    '''shadow
+    '''
+
     _nodes = []
+    '''_nodes
+    '''
+
     _init_request = [False, False]
+    '''_init_request
+    '''
 
     def __init__(self, **kwargs):
         super(Layout3D, self).__init__(**kwargs)
@@ -114,12 +128,10 @@ class Layout3D(FloatLayout):
                 widget.parent = self.canvas3d
                 try:
                     self._nodes.append(widget.__self__)
-                    #Check kivy version
                 except:
                     self._nodes.append(widget)
 
             self.canvas3d.add_widget(widget.fbo_widget)
-            #self.add_widget(widget.fbo_widget)
             self.canvas3d.current_id += 0.02
             self.canvas3d.current_id = round(self.canvas3d.current_id, 2)
         else:
