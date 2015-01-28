@@ -289,6 +289,8 @@ Layout3D:
         ''')
         self.root = root
         return root
+        #return self.app
+        #return self.app
 
 
 if __name__ == '__main__':
