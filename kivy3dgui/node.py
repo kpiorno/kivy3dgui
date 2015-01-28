@@ -10,18 +10,11 @@ from kivy.properties import BooleanProperty, ListProperty, StringProperty
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
 from kivy3dgui.canvas3d import PICKING_BUFFER_SIZE
-try:
-    import collada
-except:
-    print("Not collada")
 
 
 def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
-
 
 def cpickle(filename, obj):
     #filename = filename.replace("/", "_")
@@ -32,7 +25,6 @@ def cpickle(filename, obj):
 
 
 def cload(filename):
-    #t_file = "./kivy3dgui/cache/" + filename.replace("/", "_")
     if os.path.exists(filename):
         f = open(filename, "rb")
         print("")
@@ -52,6 +44,7 @@ class ModelPickle:
     def __init__(self):
         self.objs = []
 
+
 def load_md5(filename, anims):
     Rotate(0, 1.0, 1, 0).angle = 180.0
     t_file = "./kivy3dgui/cache/" + filename.replace("/", "_")
@@ -66,22 +59,15 @@ def load_md5(filename, anims):
                          (b'blendIndices', 4, 'float'), (b'blendWeights', 4, 'float')],
                     mode='triangles',
                     source="./kivy3dgui/md5/" + obj.Meshes[i].texture,
-                    #source="./kivy3dgui/imgs/duckCM.png",
-
-                    #texture=video.texture,
              )
         obj.ChooseBufferedAnimation(0)
         result.append(obj)
         return result
-        #return obj
 
     mesh = MD5_Model()
     mesh.LoadMesh(filename)
-
-    #mesh.AddAnimation("./kivy3dgui/md5/bomb/bob_lamp_update.md5mesh")
     for anim in anims:
         mesh.AddAnimation(anim)
-
     mesh.BufferAllBone()
     mesh.ChooseBufferedAnimation(0)
     #mesh.SetFrame(10)
@@ -136,7 +122,6 @@ def load_ogre(filename):
             verts.append(texcoord[1])
             v_indices = [0, 0, 0, 0]
             v_weights = [0, 0, 0, 0]
-            #print (bones_data)
             if i in bones_data:
                 for j, b in enumerate(bones_data[i]):
                     v_indices[j] = b[1]
@@ -148,195 +133,15 @@ def load_ogre(filename):
             for e in v_weights:
                 verts.append(e)
 
-        #print("indices", indices)
         m = Mesh(
             vertices=verts,
             indices=indices,
             fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
                  (b'blendIndices', 4, 'float'), (b'blendWeights', 4, 'float')],
             mode='triangles',
-            #source=e+".png",
-            #texture=video.texture,
         )
 
         yield m, bones_data, skeleton, verts
-
-
-
-def load_dae_scene(filename):
-    if filename == "./kivy3dgui/dae/porshe.dae":
-        Rotate(0, 0, 1, 1).angle = 180.0
-
-    file = "./kivy3dgui/cache/" + filename.replace("/", "_")
-    obj, res = cload(file)
-    if res:
-        for mobj in obj.objs:
-            mesh = Mesh(
-                vertices=mobj.vertex,
-                indices=mobj.index,
-                fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
-                     (b'vert_pos', 2, 'float')],
-                mode='triangles',
-                source=mobj.source,
-                #texture=video.texture,
-            )
-            yield mesh
-
-    if not res:
-        collada_file = collada.Collada(filename, ignore=[collada.DaeUnsupportedError,
-                                                         collada.DaeBrokenRefError])
-
-    pobject = ModelPickle()
-    if not res and collada_file.scene is not None:
-        for geom in collada_file.scene.objects('geometry'):
-            for prim in geom.primitives():
-                mat = prim.material
-                diff_color = (0.3, 0.3, 0.3, 1.0)
-                spec_color = None
-                shininess = None
-                amb_color = None
-                tex_id = None
-                #shader_prog = self.shaders[mat.effect.shadingtype]
-                if mat is None:
-                    continue
-                for prop in mat.effect.supported:
-                    value = getattr(mat.effect, prop)
-                    # it can be a float, a color (tuple) or a Map
-                    # ( a texture )
-                    if isinstance(value, collada.material.Map):
-                        colladaimage = value.sampler.surface.image
-                        tex_id = colladaimage
-                        # Accessing this attribute forces the
-                        # loading of the image using PIL if
-                        # available. Unless it is already loaded.
-                        img = colladaimage.pilimage
-                        if img: # can read and PIL available
-                            #shader_prog = self.shaders['texture']
-                            # See if we already have texture for this image
-                            if self.textures.has_key(colladaimage.id):
-                                tex_id = self.textures[colladaimage.id]
-                            else:
-                                # If not - create new texture
-                                try:
-                                    # get image meta-data
-                                    # (dimensions) and data
-                                    (ix, iy, tex_data) = (img.size[0], img.size[1], img.tostring("raw", "RGBA", 0, -1))
-                                except SystemError:
-                                    # has no alpha channel,
-                                    # synthesize one
-                                    (ix, iy, tex_data) = (img.size[0], img.size[1], img.tostring("raw", "RGBX", 0, -1))
-                                    # generate a texture ID
-                                tid = GLuint()
-                                glGenTextures(1, ctypes.byref(tid))
-                                tex_id = tid.value
-                                # make it current
-                                glBindTexture(GL_TEXTURE_2D, tex_id)
-                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-                                # copy the texture into the
-                                # current texture ID
-                                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data)
-
-                                self.textures[colladaimage.id] = tex_id
-                        else:
-                            print("T")
-                    else:
-                        if prop == 'diffuse' and value is not None:
-                            diff_color = value
-                        elif prop == 'specular' and value is not None:
-                            spec_color = value
-                        elif prop == 'ambient' and value is not None:
-                            amb_color = value
-                        elif prop == 'shininess' and value is not None:
-                            shininess = value
-
-                # use primitive-specific ways to get triangles
-                prim_type = type(prim).__name__
-                if prim_type == 'BoundTriangleSet':
-                    triangles = prim
-                elif prim_type == 'BoundPolylist':
-                    triangles = prim.triangleset()
-                else:
-                    print('Unsupported mesh used:', prim_type)
-                    triangles = None
-
-                _vertices = []
-                _indices = []
-                _uv = []
-                if triangles is not None:
-                    triangles.generateNormals()
-                    # We will need flat lists for VBO (batch) initialization
-                    vertices = triangles.vertex.flatten().tolist()
-                    batch_len = len(vertices) // 3
-                    indices = triangles.vertex_index.flatten().tolist()
-                    normals = triangles.normal.flatten().tolist()
-                    # Track maximum and minimum Z coordinates
-                    # (every third element) in the flattened
-                    # vertex list
-                    if tex_id is not None:
-                        # This is probably the most inefficient
-                        # way to get correct texture coordinate
-                        # list (uv). I am sure that I just do not
-                        # understand enough how texture
-                        # coordinates and corresponding indexes
-                        # are related to the vertices and vertex
-                        # indicies here, but this is what I found
-                        # to work. Feel free to improve the way
-                        # texture coordinates (uv) are collected
-                        # for batch.add_indexed() invocation.
-                        uv = [[0.0, 0.0]] * batch_len
-                        for t in triangles:
-                            nidx = 0
-                            texcoords = t.texcoords[0]
-                            for vidx in t.indices:
-                                uv[vidx] = texcoords[nidx].tolist()
-                                nidx += 1
-                                # Flatten the uv list
-                        uv = [item for sublist in uv for item in sublist]
-                        _uv = uv
-                    else:
-                        pass
-
-                    _v = grouper(vertices, 3)
-                    _n = iter(grouper(normals, 3))
-                    _u = iter(grouper(_uv, 2))
-
-                    for i, e in enumerate(_v):
-                        f = chain(e, _n.__next__())
-                        if _uv != []:
-                            f = chain(f, _u.__next__())
-                        else:
-                            f = chain(f, [0, 0])
-                        f = chain(f, [i, i])
-                        _vertices = chain(_vertices, f)
-
-                    _indices = indices
-                    c_path = ""
-                    if tex_id is not None:
-                        c_path = "./kivy3dgui/imgs/" + tex_id.path
-
-                f_vertices = list(_vertices)[:]
-                f_indices = list(_indices)[:]
-
-                value = ValuePickle()
-                value.vertex = f_vertices
-                value.index = f_indices
-                value.source = c_path
-                pobject.objs.append(value)
-
-                mesh = Mesh(
-                    vertices=f_vertices,
-                    indices=f_indices,
-                    fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
-                         (b'vert_pos', 2, 'float')],
-                    mode='triangles',
-                    source=c_path,
-                    #texture=video.texture,
-                )
-                yield mesh
-        cpickle(file, pobject)
 
 
 class Node(Widget):
@@ -389,8 +194,6 @@ class Node(Widget):
                                          pos_hint={"x": 0.0, "y": 0.0})
 
         super(Widget, self).__init__(**kwargs)
-        #self.fbo_widget.alpha_blending = self.alpha_blending
-        #self.fbo_widget.fbo.add_reload_observer(self.populate_fbo)
 
     def get_pos(self):
         return self.orientation_vector[0:3]
@@ -407,7 +210,6 @@ class Node(Widget):
 
     def on_meshes(self, widget, value):
         if not self._start_objs:
-            #self._objs = self.meshes[:]
             for obj in value[:]:
                 if ".md5anim" in obj:
                     self._anims.append(obj)
@@ -433,7 +235,6 @@ class Node(Widget):
             self.orientation_vector = [self.old_transformation[0],
                                             self.old_transformation[1],
                                             self.old_transformation[2]]
-            #print (self.old_transformation, "O", value, "I")
             self._translate.xyz = value[0:3]
             self._shadow_translate.xyz = value[0:3]
             self._picking_translate.xyz = value[0:3]
@@ -448,7 +249,6 @@ class Node(Widget):
             self._motion_blur_rotate.set(*value)
 
     def add_widget(self, *largs):
-        # trick to attach kivy3dgui instructino to fbo instead of canvas
         self.has_gui = True
         self.fbo_widget.add_widget(largs[0])
         self.populate_fbo(self.fbo_widget)
@@ -465,7 +265,6 @@ class Node(Widget):
                 obj.texture = self.fbo_widget.fbo.texture
                 with self.fbo_widget.fbo:
                         ClearColor(1, 1, 1, 1)
-        #self._update_fbo += 1
         self.flip_coords = False
 
     def start(self):
@@ -497,7 +296,6 @@ class Node(Widget):
             self._motion_blur_rotate = Rotate(*self.rotate)
             self._motion_blur_scale = Scale(*self.scale)
 
-
         UpdateNormalMatrix()
         for e in self._objs:
             _vertices = []
@@ -521,12 +319,11 @@ class Node(Widget):
                          (b'vert_pos', 2, 'float')],
                     mode='triangles',
                     source=e+".png",
-                    #source="./kivy3dgui/imgs/backhouse/imgback.jpg",
-                    #texture=video.texture,
                 )
                 self.objs.append(mesh)
 
             if (".dae" in e) or ('.xml' in e and not ".mesh.xml" in e):
+                raise Exception("Collada not yet implemented")
                 for o in load_dae_scene(e):
                     self.objs.append(o)
                     if self.init == 0:
@@ -542,6 +339,7 @@ class Node(Widget):
                         self.mesh = o
 
             if ".md5mesh" in e:
+                raise Exception("MD5 not implemented")
                 for o in load_md5(e, self._anims):
                     self.objs.append(o)
                     if self.init == 0:

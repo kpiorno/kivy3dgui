@@ -102,7 +102,7 @@ class Canvas3D(FloatLayout):
         with self.canvas.after:
             self.cbr = Callback(self.reset_gl_context)
             PopMatrix()
-        #Fixing Shadow and Picking
+            #Fixing Shadow and Picking
         self.shadow = True
         self.picking = True
         if self.shadow:
@@ -116,24 +116,28 @@ class Canvas3D(FloatLayout):
 
     def pitch(self, value, time):
         from kivy.animation import Animation
+
         self.rotate = [value, 1.0, 0.0, 0.0]
         Animation.stop_all(self)
         Animation(rotate=[0.0, 1.0, 0.0, 0.0], duration=time).start(self)
 
     def walk(self, value, time):
         from kivy.animation import Animation
+
         self.translate = [0.0, 0.0, value]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
 
     def strafe(self, value, time):
         from kivy.animation import Animation
+
         self.translate = [value, 0.0, 0.0]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
 
     def up(self, value, time):
         from kivy.animation import Animation
+
         self.translate = [0.0, value, 0.0]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
@@ -193,9 +197,9 @@ class Canvas3D(FloatLayout):
 
     def create_picking_fbo(self):
         self.picking_fbo = Fbo(size=PICKING_BUFFER_SIZE,
-                       with_depthbuffer=True,
-                       compute_normal_mat=True,
-                       clear_color=(0.0, 0.0, 0.0, 0.0))
+                               with_depthbuffer=True,
+                               compute_normal_mat=True,
+                               clear_color=(0.0, 0.0, 0.0, 0.0))
 
         self.picking_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/selection.glsl')
 
@@ -209,9 +213,9 @@ class Canvas3D(FloatLayout):
 
     def create_motion_blur(self):
         self.motion_blur_fbo = Fbo(size=(1366, 768),
-                       with_depthbuffer=True,
-                       compute_normal_mat=True,
-                       clear_color=(1.0, 1.0, 1.0, 0.0))
+                                   with_depthbuffer=True,
+                                   compute_normal_mat=True,
+                                   clear_color=(1.0, 1.0, 1.0, 0.0))
 
         self.motion_blur_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/dop.glsl')
 
@@ -299,7 +303,7 @@ class Canvas3D(FloatLayout):
         lightInvDir = (0.5, 2, 2)
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
-                                                   -100 * self.shadow_threshold, 200 * self.shadow_threshold*2, 0)
+                                                   -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
         depthViewMatrix = Matrix().look_at(-0.5, -50, -100, 0, 0, 0, 0, 1, 0)
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)
@@ -310,33 +314,30 @@ class Canvas3D(FloatLayout):
         self.fbo['ambient_light'] = (0.1, 0.1, 0.1)
         for m_pos in range(len(self.nodes)):
             motion_matrix = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
-            angle = self.nodes[m_pos].rotate[0] * 3.14/180
+            angle = self.nodes[m_pos].rotate[0] * 3.14 / 180
             pos = self.nodes[m_pos].get_pos()
 
             trans = self.nodes[m_pos].translate[:]
 
-            result = [0,0,0]
+            result = [0, 0, 0]
             result[0] = 0.3 if trans[0] < pos[0] else -0.3
             result[1] = 0.3 if trans[1] < pos[1] else -0.3
             result[2] = 0.3 if trans[2] < pos[2] else -0.3
 
-            motion_matrix = motion_matrix.translate(trans[0]+0.1,
-                                                    trans[1]+0.1,
+            motion_matrix = motion_matrix.translate(trans[0] + 0.1,
+                                                    trans[1] + 0.1,
                                                     trans[2])
             self.motion_blur_fbo['oldTransformation{0}'.format(str(m_pos))] = motion_matrix
 
-
-
         self.motion_blur_fbo['projection_mat'] = proj
         self.motion_blur_fbo['depthMVP'] = depthMVP
-
-
 
         if self.picking_fbo:
             self.picking_fbo['projection_mat'] = proj
 
         import random
-        self.alpha += 10*time
+
+        self.alpha += 10 * time
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
 
@@ -360,7 +361,7 @@ class Canvas3D(FloatLayout):
 
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
-                                                   -100 * self.shadow_threshold, 200 * self.shadow_threshold*2, 0)
+                                                   -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
         depthViewMatrix = Matrix().look_at(-0.5, -50, -100, 0, 0, 0, 0, 1, 0)
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)
@@ -370,7 +371,7 @@ class Canvas3D(FloatLayout):
 
         if self.shadow:
             self.update_fbo(largs[0])
-        label.text = str(Clock.get_rfps())
+            #label.text = str(Clock.get_rfps())
 
 
     def on_size(self, instance, value):
@@ -386,8 +387,8 @@ class Canvas3D(FloatLayout):
 
 
     def define_rotate_angle(self, touch):
-        x_angle = (touch.dx/self.width)*360
-        y_angle = -1*(touch.dy/self.height)*360
+        x_angle = (touch.dx / self.width) * 360
+        y_angle = -1 * (touch.dy / self.height) * 360
         return x_angle, y_angle
 
     def get_pixel_color(self, x, y):
@@ -426,13 +427,14 @@ class Canvas3D(FloatLayout):
         pc[2] = pc[2]
 
         import copy
+
         t_touch = copy.copy(touch)
         t_touch = touch
-        t_touch.x = int(pc[1]*PICKING_BUFFER_SIZE[0])
-        t_touch.y = int(pc[2]*PICKING_BUFFER_SIZE[1])
+        t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
+        t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
         self.last_touch_pos = [t_touch.x, t_touch.y,
-                               float(t_touch.x)/float(EventLoop.window.system_size[0]),
-                               float(t_touch.x)/float(EventLoop.window.system_size[1])]
+                               float(t_touch.x) / float(EventLoop.window.system_size[0]),
+                               float(t_touch.x) / float(EventLoop.window.system_size[1])]
         t_touch.pos = (t_touch.x, t_touch.y)
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
@@ -464,17 +466,18 @@ class Canvas3D(FloatLayout):
             except:
                 pass
         import copy
+
         t_touch = copy.copy(touch)
         t_touch = touch
-        t_touch.x = int(pc[1]*PICKING_BUFFER_SIZE[0])
-        t_touch.y = int(pc[2]*PICKING_BUFFER_SIZE[1])
+        t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
+        t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
 
         if 'right' in t_touch.button:
             t_touch.pos = (t_touch.x, t_touch.y)
             return
 
-        t_touch.sx = float(touch.x)/float(EventLoop.window.system_size[0])
-        t_touch.sy = float(touch.y)/float(EventLoop.window.system_size[1])
+        t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
+        t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
 
         self.last_touch_pos = [t_touch.x, t_touch.y, t_touch.sx, t_touch.sy]
         if pc[0] != 0:
@@ -495,6 +498,7 @@ class Canvas3D(FloatLayout):
         pc[1] = pc[1]
         pc[2] = pc[2]
         import copy
+
         t_touch = copy.copy(touch)
         t_touch = touch
 
@@ -513,9 +517,11 @@ class Canvas3D(FloatLayout):
 
         return True
 
+
 class RendererApp(App):
     def build(self):
         return Renderer()
+
 
 if __name__ == "__main__":
     RendererApp().run()
