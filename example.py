@@ -7,7 +7,7 @@ doc = '''
 * An Example
 * Layout3D for Kivy Widgets
 * More to come
-* Contact to: kpiorno@uci.cu
+* If you want to help develop this project mail me: kpiorno@uci.cu
 '''
 
 class AtomPlatformApp(App):
