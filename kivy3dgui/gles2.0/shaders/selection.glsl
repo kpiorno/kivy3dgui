@@ -1,9 +1,3 @@
-/* simple.glsl
-
-simple diffuse lighting based on laberts cosine law; see e.g.:
-    http://en.wikipedia.org/wiki/Lambertian_reflectance
-    http://en.wikipedia.org/wiki/Lambert%27s_cosine_law
-*/
 ---VERTEX SHADER-------------------------------------------------------
 #ifdef GL_ES
     precision highp float;
