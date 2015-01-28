@@ -47,7 +47,7 @@ void main(){
     gl_FragColor.y = gl_FragCoord.z;
     gl_FragColor.z = gl_FragCoord.z;
     gl_FragColor.a = 1.0;
-    if (cast_shadows==0) gl_FragColor.a = 0.0;
+    if (cast_shadows==0.0) gl_FragColor.a = 0.0;
     //gl_FragColor = vec4(gl_FragCoord.z);
 }
 

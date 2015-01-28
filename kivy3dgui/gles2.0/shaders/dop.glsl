@@ -62,10 +62,10 @@ void main(){
     //fragmentdepth = gl_FragCoord.z;
     //if (int(id) > 2)
     //   return;
-    gl_FragColor.x = 1-390.0/m_pos.w;
-    gl_FragColor.y = 1-390.0/m_pos.w;
-    gl_FragColor.z = 1-390.0/m_pos.w;
-    gl_FragColor.a = 1-1.0;
+    gl_FragColor.x = 1.0-390.0/m_pos.w;
+    gl_FragColor.y = 1.0-390.0/m_pos.w;
+    gl_FragColor.z = 1.0-390.0/m_pos.w;
+    gl_FragColor.a = 1.0-1.0;
     //gl_FragColor.xyz = getSpeedColor();
     gl_FragColor.a = 1.0;
     //if (cast_shadows==0) gl_FragColor.a = 1.0;

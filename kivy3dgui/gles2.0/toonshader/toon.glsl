@@ -120,7 +120,7 @@ void main (void){
     poissonDisk[3] = vec2( 0.34495938, 0.29387760 );
     vec4 color1 = vec4(1.0,1.0,1.0,1.0);
     vec2 t_coords = tex_coord0;
-    if (flip_coords == 1)
+    if (int(flip_coords) == 1)
         t_coords = vec2(tex_coord0.x, 1.0 - tex_coord0.y);
     
     
@@ -139,7 +139,7 @@ void main (void){
     else if (intensity > 0.25) color2 = vec4(0.4, 0.4, 0.4, 1.0);
     else                       color2 = vec4(0.2, 0.2, 0.2, 1.0);
     
-    if (lighting == 0) color2 = light_intensity;
+    if (lighting == 0.0) color2 = light_intensity;
 
     float visibility = 1.1;
     vec3 n = normalize(N);
