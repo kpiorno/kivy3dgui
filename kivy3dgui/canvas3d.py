@@ -17,8 +17,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-
+import copy
 from kivy.app import App
+from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ListProperty
@@ -29,6 +30,7 @@ from kivy.graphics import *
 from kivy.base import EventLoop
 from kivy.core.window import Window
 from kivy.uix.label import Label
+
 
 
 PICKING_BUFFER_SIZE = (1366, 768)
@@ -101,8 +103,6 @@ class Canvas3D(FloatLayout):
     '''
 
     def __init__(self, **kwargs):
-        from random import random
-
         self.shadow = kwargs.get("shadow", False)
         self.shadow = True
         self.picking = True
@@ -156,29 +156,21 @@ class Canvas3D(FloatLayout):
         self._touches = {}
 
     def pitch(self, value, time):
-        from kivy.animation import Animation
-
         self.rotate = [value, 1.0, 0.0, 0.0]
         Animation.stop_all(self)
         Animation(rotate=[0.0, 1.0, 0.0, 0.0], duration=time).start(self)
 
     def walk(self, value, time):
-        from kivy.animation import Animation
-
         self.translate = [0.0, 0.0, value]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
 
     def strafe(self, value, time):
-        from kivy.animation import Animation
-
         self.translate = [value, 0.0, 0.0]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
 
     def up(self, value, time):
-        from kivy.animation import Animation
-
         self.translate = [0.0, value, 0.0]
         Animation.stop_all(self)
         Animation(translate=(0.0, 0.0, 0.0), duration=time).start(self)
@@ -209,9 +201,7 @@ class Canvas3D(FloatLayout):
 
         self._picking_instruction.add(Callback(self.setup_gl_context_picking))
 
-
     def add_widget(self, *largs):
-        # trick to attach kivy3dgui instructino to fbo instead of canvas
         canvas = self.canvas
         self.canvas = self.fbo
         ret = super(Canvas3D, self).add_widget(*largs)
@@ -278,12 +268,10 @@ class Canvas3D(FloatLayout):
         self._instruction_motion_fbo.add(Callback(self.setup_gl_context_motion_blur))
 
     def setup_gl_context(self, *args):
-
         glEnable(GL_BLEND)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)
-
 
     def setup_gl_context_shadow(self, *args):
         self.fbo.clear_buffer()
@@ -330,7 +318,6 @@ class Canvas3D(FloatLayout):
             PopMatrix()
 
         node.populate_fbo(node)
-
 
     def reset_gl_context(self, *args):
         glDisable(GL_DEPTH_TEST)
@@ -412,10 +399,8 @@ class Canvas3D(FloatLayout):
             self.update_fbo(largs[0])
             #label.text = str(Clock.get_rfps())
 
-
     def on_size(self, instance, value):
         self._update_fbo = 0
-
 
     def setup_scene(self):
         Color(1, 1, 1, 1)
@@ -423,7 +408,6 @@ class Canvas3D(FloatLayout):
         Translate(0, 0, 0)
         UpdateNormalMatrix()
         PopMatrix()
-
 
     def define_rotate_angle(self, touch):
         x_angle = (touch.dx / self.width) * 360
@@ -465,8 +449,6 @@ class Canvas3D(FloatLayout):
         pc[1] = pc[1]
         pc[2] = pc[2]
 
-        import copy
-
         t_touch = copy.copy(touch)
         t_touch = touch
         t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
@@ -483,7 +465,6 @@ class Canvas3D(FloatLayout):
                 touch.ud["pick_value"] = float_str
                 return self.fbo_list[float_str].on_touch_down(t_touch)
         return True
-
 
     def on_touch_move(self, touch):
         x, y = self.get_fixed_points(touch.x, touch.y)
@@ -503,7 +484,6 @@ class Canvas3D(FloatLayout):
                     return
             except:
                 pass
-        import copy
 
         t_touch = copy.copy(touch)
         t_touch = touch
@@ -535,8 +515,6 @@ class Canvas3D(FloatLayout):
             return
         pc[1] = pc[1]
         pc[2] = pc[2]
-        import copy
-
         t_touch = copy.copy(touch)
         t_touch = touch
 
