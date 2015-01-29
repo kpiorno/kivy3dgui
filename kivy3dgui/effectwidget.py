@@ -455,7 +455,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 tex_coords, vec2 coords)
     //value = 2.0 - depth*3.0;
     //if (value < 4.0) value = 0.0;
     //if (value > 5.0) value = 5.0;
-    if (depth < 1.0) value = 0;
+    if (depth < 1.0) value = 0.0;
     //value = -30.0 + depth*20.0;
     value = (depth)*4.0;
     float dt = value * 1.0 / resolution.x;
@@ -484,7 +484,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 tex_coords, vec2 coords)
     //value = 2.0 - (depth)*3.0;
     //if (value < 4.0) value = 0.0;
     //if (value > 5.0) value = 5.0;
-    if (depth < 1.0) value = 0;
+    if (depth < 1.0) value = 0.0;
     //value = -30.0 + depth*20.0;
     value = (depth)*4.0;
     float dt = value * 1.0 / resolution.x;
