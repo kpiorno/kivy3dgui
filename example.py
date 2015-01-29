@@ -4,9 +4,9 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.rst import RstDocument
 
 doc = '''
-* An Example
-* Layout3D for Kivy Widgets
-* More to come
+* An Example.
+* Layout3D for Kivy Widgets.
+* More to come.
 * If you want to help develop this project mail me: kpiorno@uci.cu
 '''
 
