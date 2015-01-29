@@ -10,7 +10,7 @@ doc = '''
 * If you want to help develop this project mail me: kpiorno@uci.cu
 '''
 
-class AtomPlatformApp(App):
+class ExampleApp(App):
     def build(self):
         self.m_doc = doc
         from kivy.lang import Builder
@@ -54,16 +54,21 @@ Layout3D:
                 pos_hint: {"x":0.0, "y":0.6}
                 text: "GO!!!"
                 font_size: 50
-
-                on_release: Animation(rotate=(-60, 0, 1.0, 0.0), scale=(1, 1, 1), duration=4.3).start(SecondWindow)
-                on_release: Animation(rotate=(7, 0, 1.0, 0.0), translate=(-240, -80, 380), duration=10.3).start(FirstWindow)
+                on_release:
+                    Animation.cancel_all(FirstWindow)
+                    Animation.cancel_all(SecondWindow)
+                    Animation(rotate=(-60, 0, 1.0, 0.0), scale=(1, 1, 1), duration=4.3).start(SecondWindow)
+                    Animation(rotate=(7, 0, 1.0, 0.0), translate=(-240, -80, 380), duration=10.3).start(FirstWindow)
 
             TextInput:
                 id: TextSphere
                 text: "Please write or write please?"
                 size_hint: (0.8, 0.4)
-                on_focus: if args[1]: Animation(translate= (10, -10.0, -20), rotate=(95, 0, 1.0, -0.3), duration=0.3).start(Node1)
-                on_focus: if not args[1]: Animation(translate= (20, -10.0, -40), rotate= (90, 0.3, 1, 0), duration=0.3).start(Node1)
+                on_focus:
+                    if args[1]: Animation(translate= (10, -10.0, -20), rotate=(95, 0, 1.0, -0.3),
+                    duration=0.3).start(Node1)
+                    if not args[1]: Animation(translate= (20, -10.0, -40), rotate= (90, 0.3, 1, 0),
+                    duration=0.3).start(Node1)
                 font_size: 40
 
     Node:
@@ -146,8 +151,11 @@ Layout3D:
                 size_hint: (0.1, 0.05)
                 pos_hint: {"x": 0.5, "y": 0.8}
                 text: "Rotate"
-                on_release: (Animation(rotate=(30, 0, 1, 0), duration=4.0, t="out_bounce") + Animation(rotate=(10, 0, 1, 0), duration=4.0, t="out_bounce")).start(FirstWindow)
-                on_release: Animation.cancel_all(FirstWindow)
+                on_release:
+                    Animation.cancel_all(FirstWindow)
+                    (Animation(rotate=(30, 0, 1, 0), duration=4.0, t="out_bounce") + Animation(rotate=(10, 0, 1, 0),
+                    duration=4.0, t="out_bounce")).start(FirstWindow)
+
             Slider:
                 size_hint: (0.3, 0.1)
                 pos_hint: {"x": 0.4, "y": 0.6}
@@ -185,4 +193,4 @@ Layout3D:
 
 
 if __name__ == '__main__':
-    AtomPlatformApp().run()
+    ExampleApp().run()
