@@ -30,7 +30,9 @@ Layout3D:
                     size: self.size
                     pos: self.pos
                     source: "./data/imgs/terr_rock6.jpg"
+
             on_touch_up: self.parent.fbo.texture.save("./data/.debug/guide.jpg")
+
             GridLayout:
                 cols: 4
                 Label:
@@ -61,6 +63,7 @@ Layout3D:
                             if not args[1]: Animation(translate=(0, -20.0, -30), rotate=(-20, 0, 1, 0),
                             duration=0.3).start(Node1)
                     Label:
+
                 GridLayout:
                     cols: 1
                     TextInput:
