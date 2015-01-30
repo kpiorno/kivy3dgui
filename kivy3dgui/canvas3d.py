@@ -102,6 +102,10 @@ class Canvas3D(FloatLayout):
     '''Mesh ID counter
     '''
 
+    last_touch_pos = [-1, -1, -1, -1]
+    '''last_touch_pos counter
+    '''
+
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
         self.shadow = True
