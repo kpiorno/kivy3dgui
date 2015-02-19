@@ -209,6 +209,7 @@ class Node(Widget):
             self.fbo_widget.alpha_blending = self.alpha_blending
 
     def on_meshes(self, widget, value):
+        self._objs = value[:]
         if not self._start_objs:
             for obj in value[:]:
                 if ".md5anim" in obj:

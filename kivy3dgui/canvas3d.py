@@ -22,7 +22,7 @@ from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import ListProperty
+from kivy.properties import ListProperty, NumericProperty
 from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
@@ -33,6 +33,7 @@ from kivy.uix.label import Label
 
 
 
+#PICKING_BUFFER_SIZE = Window.size
 PICKING_BUFFER_SIZE = (1366, 768)
 TRANS_TOUCH_SIZE = Window.size
 
@@ -106,8 +107,15 @@ class Canvas3D(FloatLayout):
     '''last_touch_pos counter
     '''
 
+    perspective_value = NumericProperty(95.)
+    '''Perspective value
+    '''
+
+
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
+        #global PICKING_BUFFER_SIZE
+        #PICKING_BUFFER_SIZE = kwargs.get("canvas_size", (1366, 768))
         self.shadow = True
         self.picking = True
         self.co = self.canvas
@@ -239,7 +247,7 @@ class Canvas3D(FloatLayout):
         self.picking_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/selection.glsl')
 
     def create_fbo(self):
-        self.fbo = Fbo(size=(1366, 768),
+        self.fbo = Fbo(size=PICKING_BUFFER_SIZE,
                        with_depthbuffer=True,
                        compute_normal_mat=True,
                        clear_color=(1.0, 1.0, 1.0, 0.0))
@@ -247,7 +255,7 @@ class Canvas3D(FloatLayout):
         self.fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/shadowpass.glsl')
 
     def create_motion_blur(self):
-        self.motion_blur_fbo = Fbo(size=(1366, 768),
+        self.motion_blur_fbo = Fbo(size=PICKING_BUFFER_SIZE,
                                    with_depthbuffer=True,
                                    compute_normal_mat=True,
                                    clear_color=(1.0, 1.0, 1.0, 0.0))
@@ -332,6 +340,9 @@ class Canvas3D(FloatLayout):
         height = self.height if self.height > 1 else 100
         asp = (width / float(height))
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
+        proj = Matrix()
+        proj.perspective(self.perspective_value, 1, 1, 1000)
+
         lightInvDir = (0.5, 2, 2)
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
@@ -370,12 +381,16 @@ class Canvas3D(FloatLayout):
         self.alpha += 10 * time
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
+        #self.perspective_value += 0.04
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
         asp = width / float(height)
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
+        proj = Matrix()
+        proj.perspective(self.perspective_value, 1, 1, 1000)
+
         matrix_camera = Matrix().identity()
         matrix_camera.look_at(0, 100, 300, 100, 0, -100, 0, 1, 0)
         self.canvas['projection_mat'] = proj
