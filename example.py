@@ -21,13 +21,14 @@ class ExampleApp(App):
 Layout3D:
     id: par
     size_hint: (1.0, 1.0)
+    canvas_size: (1366, 768)
     post_processing: True
     Node:
         id: Node1
         name: 'Node 0'
         rotate: (90, 0.3, 1, 0)
         scale: (0.4, 0.4, 0.4)
-        translate: (20, -10.0, -30)
+        translate: (20, -10.0, -40)
         effect: True
         meshes: ("./data/obj/sphere.obj", )
         FloatLayout:
@@ -65,7 +66,7 @@ Layout3D:
                 text: "Please write or write please?"
                 size_hint: (0.8, 0.4)
                 on_focus:
-                    if args[1]: Animation(translate= (10, -10.0, -20), rotate=(95, 0, 1.0, -0.3),
+                    if args[1]: Animation(translate= (10, -10.0, -30), rotate=(95, 0, 1.0, -0.3),
                     duration=0.3).start(Node1)
                     if not args[1]: Animation(translate= (20, -10.0, -40), rotate= (90, 0.3, 1, 0),
                     duration=0.3).start(Node1)
@@ -75,7 +76,7 @@ Layout3D:
         id: SecondWindow
         name: 'Node 1'
         scale: (0.01, 0.01, 0.01)
-        translate: (95, 0, -80)
+        translate: (95, 0, -110)
         effect: True
         meshes: ("./data/obj/2dbox.obj",)
         FloatLayout:
@@ -96,8 +97,8 @@ Layout3D:
         id: FirstWindow
         name: 'Node 1'
         rotate: (10, 0, 1, 0)
-        scale: (1, 0.7, 1)
-        translate: (0, 0, -40)
+        scale: (1, 1.0, 1)
+        translate: (0, 0, -60)
         effect: True
         meshes: ("./data/obj/2dbox.obj",)
         FloatLayout:
