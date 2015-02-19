@@ -19,13 +19,15 @@ THE SOFTWARE.
 """
 
 from kivy.uix.floatlayout import FloatLayout
-import kivy3dgui.canvas3d
+from kivy3dgui import canvas3d
 from kivy3dgui.canvas3d import Canvas3D
-import kivy3dgui.effectwidget
+from kivy3dgui import effectwidget
 from kivy3dgui.effectwidget import BlurEffectWidget
 from kivy3dgui.node import Node
-from kivy.properties import BooleanProperty
+from kivy.properties import BooleanProperty, ListProperty
 from kivy.graphics import *
+from kivy.core.window import Window
+from kivy.graphics.texture import Texture
 
 
 class Layout3D(FloatLayout):
@@ -49,16 +51,19 @@ class Layout3D(FloatLayout):
     '''_init_request
     '''
 
+    canvas_size = ListProperty(Window.size)
+
     def __init__(self, **kwargs):
+
+        self.canvas_size = kwargs.get("canvas_size", Window.size)
         super(Layout3D, self).__init__(**kwargs)
-        #kivy3dgui.canvas3d.PICKING_BUFFER_SIZE = kwargs.get("canvas_size", (640, 480))
-        #kivy3dgui.effectwidget.C_SIZE = kwargs.get("effect_canvas_size", (640, 480))
+        #effectwidget.C_SIZE = self.canvas_size
+        effectwidget.C_SIZE = (1366, 768)
 
         with self.canvas.before:
             Color(1.0, 1.0, 1.0, 1.0)
             ClearColor(1.0, 1.0, 1.0, 1.0)
 
-        #if the layout was defined with the kivy lang 3d canvas should be created after
         self.create_canvas()
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
@@ -75,6 +80,17 @@ class Layout3D(FloatLayout):
         except Exception as w:
             pass
 
+    def on_canvas_size(self, widget, value):
+        #effectwidget.C_SIZE = value
+        #canvas3d.PICKING_BUFFER_SIZE = value
+        #if self.canvas3d is not None:
+        #    self.canvas3d = None
+        #    self.create_canvas()
+        #    self.effect_widget.mask_effect = self.canvas3d.picking_fbo,
+        #    self.effect_widget.motion_effect = self.canvas3d.motion_blur_fbo
+        pass
+
+
     def walk(self, value, time):
         self.canvas3d.walk(value, time)
 
@@ -86,12 +102,13 @@ class Layout3D(FloatLayout):
 
     def create_canvas(self, *args):
         if self.canvas3d is None:
-            self.canvas3d = Canvas3D(shadow=True, picking=True, size_hint=(1, 1))
+            self.canvas3d = Canvas3D(shadow=True, picking=True, size_hint=(1, 1),
+                                     canvas_size=self.canvas_size)
             self.add_widget(self.canvas3d)
             self.canvas3d.size = self.size
             self.canvas3d.size_hint = self.size_hint
 
-    def add_node(self, *args):
+    def _add_node(self, *args):
         self.canvas3d.add_node(args[0])
 
     def on_post_processing(self, widget, value):
@@ -123,7 +140,9 @@ class Layout3D(FloatLayout):
             widget.pick_id = self.canvas3d.current_id
 
             if widget._start_objs:
-                self.add_node(widget)
+                if widget._objs != []:
+                    widget._start_objs = False
+                self._add_node(widget)
             else:
                 widget.parent = self.canvas3d
                 try:
