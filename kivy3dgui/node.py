@@ -9,7 +9,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import BooleanProperty, ListProperty, StringProperty
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
-from kivy3dgui.canvas3d import PICKING_BUFFER_SIZE
+from kivy3dgui import canvas3d
 
 
 def grouper(iterable, n, fillvalue=None):
@@ -190,7 +190,7 @@ class Node(Widget):
             self._start_objs = False
 
         self.has_gui = False
-        self.fbo_widget = FboFloatLayout(size=PICKING_BUFFER_SIZE, size_hint=(None, None),
+        self.fbo_widget = FboFloatLayout(size=canvas3d.PICKING_BUFFER_SIZE, size_hint=(None, None),
                                          pos_hint={"x": 0.0, "y": 0.0})
 
         super(Widget, self).__init__(**kwargs)
@@ -261,8 +261,8 @@ class Node(Widget):
         EventLoop.ensure_window()
         if self._update_fbo < 2:
             for obj in self.objs:
-                self.fbo_widget.size = PICKING_BUFFER_SIZE
-                self.fbo_widget.fbo.size = PICKING_BUFFER_SIZE
+                self.fbo_widget.size = canvas3d.PICKING_BUFFER_SIZE
+                self.fbo_widget.fbo.size = canvas3d.PICKING_BUFFER_SIZE
                 obj.texture = self.fbo_widget.fbo.texture
                 with self.fbo_widget.fbo:
                         ClearColor(1, 1, 1, 1)

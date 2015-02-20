@@ -57,8 +57,7 @@ class Layout3D(FloatLayout):
 
         self.canvas_size = kwargs.get("canvas_size", Window.size)
         super(Layout3D, self).__init__(**kwargs)
-        #effectwidget.C_SIZE = self.canvas_size
-        effectwidget.C_SIZE = (1366, 768)
+        effectwidget.C_SIZE = self.canvas_size
 
         with self.canvas.before:
             Color(1.0, 1.0, 1.0, 1.0)
@@ -81,14 +80,9 @@ class Layout3D(FloatLayout):
             pass
 
     def on_canvas_size(self, widget, value):
-        #effectwidget.C_SIZE = value
-        #canvas3d.PICKING_BUFFER_SIZE = value
-        #if self.canvas3d is not None:
-        #    self.canvas3d = None
-        #    self.create_canvas()
-        #    self.effect_widget.mask_effect = self.canvas3d.picking_fbo,
-        #    self.effect_widget.motion_effect = self.canvas3d.motion_blur_fbo
-        pass
+        effectwidget.C_SIZE = value
+        canvas3d.PICKING_BUFFER_SIZE = value
+
 
 
     def walk(self, value, time):

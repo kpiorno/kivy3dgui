@@ -33,8 +33,7 @@ from kivy.uix.label import Label
 
 
 
-#PICKING_BUFFER_SIZE = Window.size
-PICKING_BUFFER_SIZE = (1366, 768)
+PICKING_BUFFER_SIZE = Window.size
 TRANS_TOUCH_SIZE = Window.size
 
 label = Label(pos_hint={"x": 0.0, "y": 0.0},
@@ -114,8 +113,8 @@ class Canvas3D(FloatLayout):
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
-        #global PICKING_BUFFER_SIZE
-        #PICKING_BUFFER_SIZE = kwargs.get("canvas_size", (1366, 768))
+        global PICKING_BUFFER_SIZE
+        PICKING_BUFFER_SIZE = kwargs.get("canvas_size", Window.size)
         self.shadow = True
         self.picking = True
         self.co = self.canvas
@@ -420,6 +419,8 @@ class Canvas3D(FloatLayout):
 
     def on_size(self, instance, value):
         self._update_fbo = 0
+        self.picking_fbo.size = PICKING_BUFFER_SIZE
+        self.motion_blur_fbo.size = PICKING_BUFFER_SIZE
 
     def setup_scene(self):
         Color(1, 1, 1, 1)
