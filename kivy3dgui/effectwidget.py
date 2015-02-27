@@ -768,6 +768,6 @@ class EffectWidget(FloatLayout):
 class BlurEffectWidget(EffectWidget):
     #effects = ListProperty([effect_fxaa])
     #effects = ListProperty([effect_bloom_b, effect_fxaa,  effect_dop])
-    effects = ListProperty([effect_fxaa])
+    effects = ListProperty([effect_fxaa, effect_bloom_b])
     #effects = ListProperty([effect_motion])
     #effects = ListProperty()
