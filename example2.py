@@ -19,7 +19,7 @@ Layout3D:
         name: 'Node 0'
         rotate: (-20, 0, 1, 0)
         scale: (1.0, 1.0, 1.0)
-        translate: (0, -20.0, -30)
+        translate: (0, -20.0, -50)
         effect: True
         meshes: ("./data/obj/athene.obj", )
         FloatLayout:
@@ -60,7 +60,7 @@ Layout3D:
                         on_focus:
                             if args[1]: Animation(translate=(0, -10.0, -12), rotate=(-45, 0., 1., 0.),
                             duration=0.3).start(Node1)
-                            if not args[1]: Animation(translate=(0, -20.0, -30), rotate=(-20, 0, 1, 0),
+                            if not args[1]: Animation(translate=(0, -20.0, -50), rotate=(-20, 0, 1, 0),
                             duration=0.3).start(Node1)
                     Label:
 
@@ -76,7 +76,7 @@ Layout3D:
                         on_focus:
                             if args[1]: Animation(translate=(0, -3.0, -10), rotate=(35, 0., 1., 0.),
                             duration=0.3).start(Node1)
-                            if not args[1]: Animation(translate=(0, -20.0, -30), rotate=(-20, 0, 1, 0),
+                            if not args[1]: Animation(translate=(0, -20.0, -50), rotate=(-20, 0, 1, 0),
                             duration=0.3).start(Node1)
 
 
