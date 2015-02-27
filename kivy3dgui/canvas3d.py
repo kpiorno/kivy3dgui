@@ -27,6 +27,7 @@ from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
 from kivy.graphics import *
+from kivy.graphics.texture import Texture
 from kivy.base import EventLoop
 from kivy.core.window import Window
 from kivy.uix.label import Label
@@ -106,10 +107,9 @@ class Canvas3D(FloatLayout):
     '''last_touch_pos counter
     '''
 
-    perspective_value = NumericProperty(95.)
+    perspective_value = NumericProperty(35.)
     '''Perspective value
     '''
-
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
@@ -340,7 +340,7 @@ class Canvas3D(FloatLayout):
         asp = (width / float(height))
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
         proj = Matrix()
-        proj.perspective(self.perspective_value, 1, 1, 1000)
+        proj.perspective(self.perspective_value, asp, 1, 1000)
 
         lightInvDir = (0.5, 2, 2)
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
@@ -388,7 +388,7 @@ class Canvas3D(FloatLayout):
         asp = width / float(height)
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
         proj = Matrix()
-        proj.perspective(self.perspective_value, 1, 1, 1000)
+        proj.perspective(self.perspective_value, asp, 1, 1000)
 
         matrix_camera = Matrix().identity()
         matrix_camera.look_at(0, 100, 300, 100, 0, -100, 0, 1, 0)
