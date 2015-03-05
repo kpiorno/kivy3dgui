@@ -6,7 +6,7 @@ If you want to help with the development you can mail me: kpiorno@uci.cu
 
 ![Screenshot](https://github.com/kpiorno/kivy3dgui/blob/master/screenshots/screenshot1.jpg "Screenshot")
 
-# Example
+# A Quick Example
 ```python
 #:kivy 1.0
 #: import Layout3D kivy3dgui.layout3d
