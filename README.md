@@ -10,7 +10,6 @@ If you want to help with the development you can mail me: kpiorno@uci.cu
 ```python
 #:kivy 1.0
 #: import Layout3D kivy3dgui.layout3d
-#: import Animation kivy.animation.Animation
 Layout3D:
     id: par
     size_hint: (1.0, 1.0)
