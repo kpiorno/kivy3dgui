@@ -34,7 +34,6 @@ Layout3D:
                     source: "./data/imgs/background.jpg"
             size_hint: (1.0, 1.0)
             Button:
-                #size_hint: (0.2, 0.2)
                 pos_hint: {"x":0, "y":0 }
                 size_hint: (None, None)
                 text: "Hello"
