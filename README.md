@@ -3,7 +3,9 @@
 Kivy 3D. A set of widgets to display and interact with Kivy widgets in a 3D mesh.
 
 If you want to help with the development you can mail me: kpiorno@uci.cu
-You can watch an video example [Absolute README link](https://vimeo.com/127000600) 
+
+You can watch an video example [here](https://vimeo.com/127000600) 
+
 ![Screenshot](https://github.com/kpiorno/kivy3dgui/blob/master/screenshots/screenshot1.jpg "Screenshot")
 
 # A Quick Example
