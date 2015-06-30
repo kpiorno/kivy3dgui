@@ -3,6 +3,7 @@
 Kivy 3D. A pure Kivy library to display and interact with Kivy widgets in a 3D mesh.
 
 If you want to help with the development you can mail me: kpiorno@uci.cu
+
 It's easy to test, just download the code a run the examples. Enjoy it!!!
 
 You can watch an video example [here](https://vimeo.com/127000600) 
