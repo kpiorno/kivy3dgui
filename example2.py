@@ -31,7 +31,7 @@ Layout3D:
                     pos: self.pos
                     source: "./data/imgs/terr_rock6.jpg"
 
-            on_touch_up: self.parent.fbo.texture.save("./data/.debug/guide.jpg")
+            on_touch_up: self.parent.fbo.texture.save("./data/imgs/imgback.jpg")
 
             GridLayout:
                 cols: 4
@@ -84,7 +84,7 @@ Layout3D:
         pos_hint: {"x":0.6, "y": 0.3}
         size_hint: (0.4, 0.3)
         allow_strecht: True
-        source: "./data/.debug/guide.jpg"
+        source: "./data/imgs/imgback.jpg"
 
     CheckBox:
         text: 'Disable'
