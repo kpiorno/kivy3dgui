@@ -540,8 +540,8 @@ class Canvas3D(FloatLayout):
 
         t_touch.x = self.last_touch_pos[0]
         t_touch.y = self.last_touch_pos[1]
-        t_touch.sx = self.last_touch_pos[2]
-        t_touch.sy = self.last_touch_pos[3]
+        t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
+        t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
 
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
