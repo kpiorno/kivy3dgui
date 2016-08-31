@@ -99,11 +99,13 @@ Node:
                           size_hint=(0.125, 0.125))
             if y < 3:                           
                 figure = Builder.load_string(red)
-                self.red_n.append({"node":figure, "front":(-31.5+x*7.8, -28+y*7.35, -108), "persp":(-31.5+x*7.8, -24, -95+y*7.35)})
+                self.red_n.append({"node":figure, "front":(-31.5+x*7.8, -28+y*7.35, -108), 
+				   "persp":(-31.5+x*7.8, -24, -95+y*7.35)})
                 layout3d.add_widget(figure)
             if y > 4:                           
                 figure = Builder.load_string(green)         
-                self.green_n.append({"node":figure, "front":(-31.5+x*7.8, -28+y*7.35, -108), "persp":(-31.5+x*7.8, -24, -169+y*7.35)})                
+                self.green_n.append({"node":figure, "front":(-31.5+x*7.8, -28+y*7.35, -108), 
+				     "persp":(-31.5+x*7.8, -24, -169+y*7.35)})                
                 layout3d.add_widget(figure)
                 
             container.add_widget(cell)
