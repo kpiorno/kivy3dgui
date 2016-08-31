@@ -121,7 +121,8 @@ class Canvas3D(FloatLayout):
         self.canvas = RenderContext(compute_normal_mat=False)
 
         #self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
-        self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
+        #self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
+        self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon_shadows.glsl')
         self.alpha = 0.0
         self._touches = []
         with self.canvas:
