@@ -110,6 +110,13 @@ class Canvas3D(FloatLayout):
     perspective_value = NumericProperty(35.)
     '''Perspective value
     '''
+    look_at = ListProperty([0, 0, 10, 0, 0, 0, 0, 1, 0])
+    '''look_at value
+    '''
+    rot_angle = 0.0
+    '''rot_angle value
+    '''
+    
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
@@ -375,8 +382,13 @@ class Canvas3D(FloatLayout):
         self.motion_blur_fbo['projection_mat'] = proj
         self.motion_blur_fbo['depthMVP'] = depthMVP
 
-        if self.picking_fbo:
+        matrix_camera = Matrix().identity()
+        matrix_camera = matrix_camera.look_at(*self.look_at)
+        
+	if self.picking_fbo:
             self.picking_fbo['projection_mat'] = proj
+	    self.picking_fbo['camera'] = matrix_camera
+
 
         self.alpha += 10 * time
         self.fbo['cond'] = (0.0, 0.7)
@@ -392,8 +404,11 @@ class Canvas3D(FloatLayout):
         proj.perspective(self.perspective_value, asp, 1, 1000)
 
         matrix_camera = Matrix().identity()
-        matrix_camera.look_at(0, 100, 300, 100, 0, -100, 0, 1, 0)
+        matrix_camera = matrix_camera.look_at(*self.look_at)
+	
         self.canvas['projection_mat'] = proj
+	self.canvas['camera'] = matrix_camera
+	
         self.canvas['diffuse_light'] = (0.0, 1.0, 0.0)
         self.canvas['ambient_light'] = (0.1, 0.1, 0.1)
         if self.shadow:

@@ -51,6 +51,10 @@ class Layout3D(FloatLayout):
     '''_init_request
     '''
 
+    look_at = ListProperty([0, 0, 10, 0, 0, 0, 0, 1, 0])
+    '''_look_at
+    '''
+
     canvas_size = ListProperty(Window.size)
 
     def __init__(self, **kwargs):
@@ -64,6 +68,7 @@ class Layout3D(FloatLayout):
             ClearColor(1.0, 1.0, 1.0, 1.0)
 
         self.create_canvas()
+        self.bind(look_at=self.canvas3d.setter('look_at'))
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
 

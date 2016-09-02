@@ -9,6 +9,7 @@ attribute vec2  v_tc0;
 
 uniform mat4 modelview_mat;
 uniform mat4 projection_mat;
+uniform mat4 camera;
 
 varying vec4 normal_vec;
 varying vec4 vertex_pos;
@@ -21,7 +22,7 @@ void main (void) {
     normal_vec = vec4(v_normal,0.0);
     tex_coord0 = v_tc0;
     
-    gl_Position = projection_mat * pos;
+    gl_Position = projection_mat * camera * pos;
 }
 
 

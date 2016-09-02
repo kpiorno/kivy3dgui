@@ -17,6 +17,7 @@ attribute vec4  blendWeights;
 
 uniform mat4 modelview_mat;
 uniform mat4 projection_mat;
+uniform mat4 camera;
 uniform mat4 matrix_view;
 uniform vec2 val_sin;
 uniform mat4 depthMVP;
@@ -59,7 +60,7 @@ void main (void) {
 	float dne = dot(N, E);
 	edge = dne > 0.0 ? dne : 0.0;
 	lightPosition = modelview_mat * vec4(0.5, 200, 0, 1);
-	vec4 e_pos = projection_mat *  pos;
+	vec4 e_pos = projection_mat * camera * pos;
 	tex_coord0 = v_tc0;
 	ShadowCoord  = depthBiasMVP*depthMVP * pos;
 	//ShadowCoord  = depthMVP * pos;
