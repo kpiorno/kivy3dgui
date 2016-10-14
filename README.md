@@ -8,17 +8,31 @@ It's easy to test, just download the code a run the examples. Enjoy it!!!
 
 You can watch an video example [here](https://vimeo.com/127000600) 
 
-![Screenshot](https://github.com/kpiorno/kivy3dgui/blob/master/screenshots/screenshot1.jpg "Screenshot")
+### How to use
+#### Step 1
 
-# A Quick Example
+Including Layout3D
+
 ```python
 #:kivy 1.0
 #: import Layout3D kivy3dgui.layout3d
+```
+#### Step 2
+
+Creating the Layout3D, it is also possible to do from Python. 
+
+```python
 Layout3D:
-    id: par
+    id: par #id for Layout3D, could be referenced just like any Kivy Widget
     size_hint: (1.0, 1.0)
-    canvas_size: (1366, 768)
-    post_processing: False
+    canvas_size: (1366, 768) #Canvas resolution
+    post_processing: False #Post-processing effects (bloom, hdr,...)
+```
+#### Step 3
+Creating nodes. 
+Nodes could be a set of 3D meshes (obj format is only supported at now). Be sure to set the UV mapping correctly. If you add a FloatLayout to the node it will be used as texture for the meshes and as a bonus you will be able to interact with the widgets that are seen on the surface of the meshes no matter the shape. The possibilities are endless. Just use your imagination. 
+
+```python
     Node:
         id: Node1
         name: 'Node 0'
@@ -26,7 +40,14 @@ Layout3D:
         scale: (0.4, 0.4, 0.4)
         translate: (20, -10.0, -110)
         effect: True
-        meshes: ("./data/obj/sphere.obj", )
+        meshes: ("./data/obj/sphere.obj", ) #List of meshes (obj only)
+```        
+#### Step 4
+Creating interaction widgets.
+The root widgets for node must be a Layout. All its children will be use as texture of the set of meshes and as aforementioned you will be able to interact with those widgets.
+
+```python
+Creating FloatLayout
         FloatLayout:
             canvas:
                 Color:
@@ -41,19 +62,5 @@ Layout3D:
                 size_hint: (None, None)
                 text: "Hello"
 
-            Button:
-                size_hint: (0.3, 0.3)
-                text: "Rotate"
-
-            Button:
-                size_hint: (0.2, 0.2)
-                pos_hint: {"x":0.0, "y":0.6}
-                text: "GO!!!"
-                font_size: 50
-
-            TextInput:
-                id: TextSphere
-                text: "Please write or write please?"
-                size_hint: (0.8, 0.4)
-                font_size: 40
 ```
+![Screenshot](https://github.com/kpiorno/kivy3dgui/blob/master/screenshots/screenshot1.jpg "Screenshot")
