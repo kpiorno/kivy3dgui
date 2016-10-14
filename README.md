@@ -47,7 +47,6 @@ Creating interaction widgets.
 The root widgets for node must be a Layout. All its children will be use as texture of the set of meshes and as aforementioned you will be able to interact with the widgets.
 
 ```python
-Creating FloatLayout
         FloatLayout:
             canvas:
                 Color:
