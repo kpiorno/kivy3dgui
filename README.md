@@ -11,7 +11,7 @@ You can watch an video example [here](https://vimeo.com/127000600)
 ### How to use
 #### Step 1
 
-Including Layout3D
+Import Layout3D
 
 ```python
 #:kivy 1.0
