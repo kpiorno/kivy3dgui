@@ -30,7 +30,7 @@ Layout3D:
 ```
 #### Step 3
 Creating nodes. 
-Nodes could be a set of 3D meshes (obj format is only supported at now). Be sure to set the UV mapping correctly. If you add a FloatLayout to the node it will be used as texture for the meshes and as a bonus you will be able to interact with the widgets that are seen on the surface of the meshes, no matter the shape. The possibilities are endless. Just use your imagination. 
+Nodes may be a set of 3D meshes (obj format is only supported at now). Be sure to set the UV mapping correctly. If you add a FloatLayout to the node it will be used as texture for the meshes and as a bonus you will be able to interact with the widgets that are seen on the surface of the meshes, no matter the shape. The possibilities are endless. Just use your imagination. 
 
 ```python
     Node:
