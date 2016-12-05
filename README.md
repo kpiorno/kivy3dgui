@@ -6,7 +6,7 @@ If you want to help with the development you can mail me: kpiorno@uci.cu
 
 It's easy to test, just download the code a run the examples. Enjoy it!!!
 
-You can watch an video example [here](https://vimeo.com/127000600) 
+You can watch video examples [here](https://vimeo.com/127000600) and [here](https://vimeo.com/194306331)
 
 ### How to use
 #### Step 1
