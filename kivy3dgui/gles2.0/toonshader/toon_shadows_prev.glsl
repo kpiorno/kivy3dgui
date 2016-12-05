@@ -133,14 +133,11 @@ void main (void){
 
     float intensity = dot(normalize(LightPosition),v_normal.xyz);
 
-    float reg = -0.3;
-    /*if (intensity > 0.75)      color2 = vec4(1.0-reg, 1.0-reg, 1.0-reg, 1.0);
-    else if (intensity > 0.65) color2 = vec4(0.95-reg, 0.95-reg, 0.95-reg, 1.0);
-    else if (intensity > 0.50) color2 = vec4(0.9-reg, 0.9-reg, 0.9-reg, 1.0);
-    else if (intensity > 0.45) color2 = vec4(0.85-reg, 0.85-reg, 0.85-reg, 1.0);
-    else                       color2 = vec4(0.8-reg, 0.8-reg, 0.8, 1.0);*/
-
-    color2 = vec4(intensity-reg, intensity-reg, intensity-reg, 1.0);
+    if (intensity > 0.80)      color2 = vec4(1.0, 1.0, 1.0, 1.0);
+    else if (intensity > 0.75) color2 = vec4(0.8, 0.8, 0.8, 1.0);
+    else if (intensity > 0.50) color2 = vec4(0.6, 0.6, 0.6, 1.0);
+    else if (intensity > 0.25) color2 = vec4(0.4, 0.4, 0.4, 1.0);
+    else                       color2 = vec4(0.2, 0.2, 0.2, 1.0);
     
     if (lighting == 0.0) color2 = light_intensity;
 
@@ -165,7 +162,7 @@ void main (void){
     res_alpha = color1.a;
 
     //visibility += 0.4;
-    if (edge >= -1.0){
+    if (edge >= 0.00){
         vec4 f_color;
         f_color = vec4((color1 * color2).xyz*visibility, res_alpha);
         gl_FragColor = f_color;

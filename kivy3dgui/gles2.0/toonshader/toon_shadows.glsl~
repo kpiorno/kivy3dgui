@@ -165,7 +165,7 @@ void main (void){
     res_alpha = color1.a;
 
     //visibility += 0.4;
-    if (edge >= -1.0){
+    if (edge >= -1){
         vec4 f_color;
         f_color = vec4((color1 * color2).xyz*visibility, res_alpha);
         gl_FragColor = f_color;
