@@ -7,7 +7,7 @@ If you want to help with the development you can mail me: kpiorno@uci.cu
 It's easy to test, just download the code a run the examples. Enjoy it!!!
 
 You can watch a video example [here](https://vimeo.com/127000600).
-Another [video](https://vimeo.com/194306331)
+Another [video](https://vimeo.com/194306331) for Tour3D Example.
 
 ### How to use
 #### Step 1
