@@ -131,18 +131,22 @@ void main (void){
     vec4 v_normal = normalize( normal_mat * normal_vec ) ;
     vec4 v_light = normalize( vec4(0,0,0,1) - vec4(vertex_pos, 1) );    
 
-    float intensity = dot(normalize(LightPosition),v_normal.xyz);
+    //float intensity = dot(normalize(LightPosition),v_normal.xyz);
+    vec3 lightVector = normalize(LightPosition - vertex_pos);
+    float diffuse = max(dot(v_normal.xyz, normalize(LightPosition)), 0.0);
 
-    float reg = -0.3;
+    float reg = -0.3f;
     /*if (intensity > 0.75)      color2 = vec4(1.0-reg, 1.0-reg, 1.0-reg, 1.0);
     else if (intensity > 0.65) color2 = vec4(0.95-reg, 0.95-reg, 0.95-reg, 1.0);
     else if (intensity > 0.50) color2 = vec4(0.9-reg, 0.9-reg, 0.9-reg, 1.0);
     else if (intensity > 0.45) color2 = vec4(0.85-reg, 0.85-reg, 0.85-reg, 1.0);
     else                       color2 = vec4(0.8-reg, 0.8-reg, 0.8, 1.0);*/
 
-    color2 = vec4(intensity-reg, intensity-reg, intensity-reg, 1.0);
+    //intensity += 0.4f;
     
-    if (lighting == 0.0) color2 = light_intensity;
+    
+    //if (lighting == 0.0) color2 = light_intensity;
+    if (diffuse < 0.75f) diffuse = 0.75f;
 
     float visibility = 1.1;
     vec4 color = texture2D( texture1, ShadowCoord.xy );
@@ -165,13 +169,11 @@ void main (void){
     res_alpha = color1.a;
 
     //visibility += 0.4;
-    if (edge >= -1.0){
-        vec4 f_color;
-        f_color = vec4((color1 * color2).xyz*visibility, res_alpha);
-        gl_FragColor = f_color;
-    }	
-    else
 	gl_FragColor = vec4(0, 0, 0, 1.0);
+    vec4 f_color;
+    f_color = vec4((color1).xyz*visibility*diffuse, res_alpha);
+    gl_FragColor = f_color;
+	
 
 }
 
