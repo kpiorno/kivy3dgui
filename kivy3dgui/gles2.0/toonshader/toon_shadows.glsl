@@ -135,7 +135,7 @@ void main (void){
     vec3 lightVector = normalize(LightPosition - vertex_pos);
     float diffuse = max(dot(v_normal.xyz, normalize(LightPosition)), 0.0);
 
-    float reg = -0.3f;
+    float reg = -0.3;
     /*if (intensity > 0.75)      color2 = vec4(1.0-reg, 1.0-reg, 1.0-reg, 1.0);
     else if (intensity > 0.65) color2 = vec4(0.95-reg, 0.95-reg, 0.95-reg, 1.0);
     else if (intensity > 0.50) color2 = vec4(0.9-reg, 0.9-reg, 0.9-reg, 1.0);
@@ -146,7 +146,7 @@ void main (void){
     
     
     //if (lighting == 0.0) color2 = light_intensity;
-    if (diffuse < 0.75f) diffuse = 0.75f;
+    if (diffuse < 0.75) diffuse = 0.75;
 
     float visibility = 1.1;
     vec4 color = texture2D( texture1, ShadowCoord.xy );

@@ -133,7 +133,7 @@ class Layout3D(FloatLayout):
         widget = largs[0]
 
         if isinstance(widget, Node):
-            print(widget.fbo_widget)
+            #print(widget.fbo_widget)
             float_str = str(self.canvas3d.current_id)[0:4]
             self.canvas3d.fbo_list[float_str] = widget.fbo_widget
             widget.pick_id = self.canvas3d.current_id
@@ -150,7 +150,8 @@ class Layout3D(FloatLayout):
                     self._nodes.append(widget)
 
             self.canvas3d.add_widget(widget.fbo_widget)
-            self.canvas3d.current_id += 0.02
+            """Check the increment"""
+            self.canvas3d.current_id += 0.01
             self.canvas3d.current_id = round(self.canvas3d.current_id, 2)
         else:
             ret = super(Layout3D, self).add_widget(*largs)
