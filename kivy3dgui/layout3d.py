@@ -102,7 +102,7 @@ class Layout3D(FloatLayout):
     def create_canvas(self, *args):
         if self.canvas3d is None:
             self.canvas3d = Canvas3D(shadow=True, picking=True, size_hint=(1, 1),
-                                     canvas_size=self.canvas_size)
+                                     canvas_size=self.canvas_size, id="CANVAS3D")
             self.add_widget(self.canvas3d)
             self.canvas3d.size = self.size
             self.canvas3d.size_hint = self.size_hint
@@ -153,6 +153,12 @@ class Layout3D(FloatLayout):
             """Check the increment"""
             self.canvas3d.current_id += 0.01
             self.canvas3d.current_id = round(self.canvas3d.current_id, 2)
+            return None
         else:
             ret = super(Layout3D, self).add_widget(*largs)
             return ret
+
+    def on_touch_up(self, touch):
+        for e in self.children:
+            if e.collide_point(touch.x, touch.y):
+                return e.on_touch_up(touch)

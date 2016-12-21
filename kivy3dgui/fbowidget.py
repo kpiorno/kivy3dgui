@@ -152,8 +152,13 @@ class FboFloatLayout(FloatLayout):
     def on_touch_move(self, touch):
         return super(FboFloatLayout, self).on_touch_move(touch)
 
+    """def on_touch_up(self, touch):
+        return super(FboFloatLayout, self).on_touch_up(touch)"""
+
     def on_touch_up(self, touch):
-        return super(FboFloatLayout, self).on_touch_up(touch)
+        for e in self.children:
+            if e.collide_point(touch.x, touch.y):
+                return e.on_touch_up(touch)
 
 
 if __name__ == '__main__':

@@ -32,8 +32,6 @@ from kivy.base import EventLoop
 from kivy.core.window import Window
 from kivy.uix.label import Label
 
-
-
 PICKING_BUFFER_SIZE = Window.size
 TRANS_TOUCH_SIZE = Window.size
 
@@ -116,7 +114,6 @@ class Canvas3D(FloatLayout):
     rot_angle = 0.0
     '''rot_angle value
     '''
-    
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
@@ -127,8 +124,8 @@ class Canvas3D(FloatLayout):
         self.co = self.canvas
         self.canvas = RenderContext(compute_normal_mat=False)
 
-        #self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
-        #self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
+        # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
+        # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
         self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon_shadows.glsl')
         self.alpha = 0.0
         self._touches = []
@@ -162,7 +159,7 @@ class Canvas3D(FloatLayout):
         with self.canvas.after:
             self.cbr = Callback(self.reset_gl_context)
             PopMatrix()
-            #Fixing Shadow and Picking
+            # Fixing Shadow and Picking
         self.shadow = True
         self.picking = True
         if self.shadow:
@@ -232,7 +229,7 @@ class Canvas3D(FloatLayout):
             self._translate_fbo = Translate(0, 0, 0)
             self._rotate_fbo = Rotate(0.0, 1.0, 0.0, 0.0)
             PushMatrix()
-            #ClearBuffers(clear_depth=True)
+            # ClearBuffers(clear_depth=True)
             self.cb = Callback(self.setup_gl_context_shadow)
             PushMatrix()
             self.setup_scene()
@@ -384,16 +381,15 @@ class Canvas3D(FloatLayout):
 
         matrix_camera = Matrix().identity()
         matrix_camera = matrix_camera.look_at(*self.look_at)
-        
-	if self.picking_fbo:
-            self.picking_fbo['projection_mat'] = proj
-	    self.picking_fbo['camera'] = matrix_camera
 
+        if self.picking_fbo:
+            self.picking_fbo['projection_mat'] = proj
+            self.picking_fbo['camera'] = matrix_camera
 
         self.alpha += 10 * time
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
-        #self.perspective_value += 0.04
+        # self.perspective_value += 0.04
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
@@ -405,10 +401,10 @@ class Canvas3D(FloatLayout):
 
         matrix_camera = Matrix().identity()
         matrix_camera = matrix_camera.look_at(*self.look_at)
-	
+
         self.canvas['projection_mat'] = proj
-	self.canvas['camera'] = matrix_camera
-	
+        self.canvas['camera'] = matrix_camera
+
         self.canvas['diffuse_light'] = (0.0, 1.0, 0.0)
         self.canvas['ambient_light'] = (0.1, 0.1, 0.1)
         if self.shadow:
@@ -431,7 +427,7 @@ class Canvas3D(FloatLayout):
 
         if self.shadow:
             self.update_fbo(largs[0])
-            #label.text = str(Clock.get_rfps())
+            # label.text = str(Clock.get_rfps())
 
     def on_size(self, instance, value):
         self._update_fbo = 0
@@ -510,7 +506,7 @@ class Canvas3D(FloatLayout):
 
         pc[1] = pc[1]
         pc[2] = pc[2]
-        #fix
+        # fix
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
             if float(float_str) >= 0.50:
@@ -548,7 +544,7 @@ class Canvas3D(FloatLayout):
         x, y = self.get_fixed_points(touch.x, touch.y)
         pc = self.get_pixel_color(x, y)
         if pc == []:
-            return
+            return True
         pc[1] = pc[1]
         pc[2] = pc[2]
         t_touch = copy.copy(touch)
@@ -556,16 +552,16 @@ class Canvas3D(FloatLayout):
 
         t_touch.x = self.last_touch_pos[0]
         t_touch.y = self.last_touch_pos[1]
-        t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
-        t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
 
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
-                return self.fbo_list[float_str].on_touch_up(t_touch)
-                pass
-
+                t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
+                t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
+                ret = self.fbo_list[float_str].on_touch_up(t_touch)
+                return ret
+                #ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
+                #return ret
         return True
-
