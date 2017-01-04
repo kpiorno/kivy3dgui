@@ -12,7 +12,8 @@ Another [video](https://vimeo.com/194306331) for Tour3D Example.
 ### How to use
 #### Step 1
 
-Import Layout3D
+Start by importing the Layout3D. This layout manages 3D Nodes but behaves just
+like a normal Kivy FloatLayout.
 
 ```python
 #:kivy 1.0
@@ -20,7 +21,7 @@ Import Layout3D
 ```
 #### Step 2
 
-Creating the Layout3D, it is also possible to do from Python. 
+Create a Layout3D, which you can also do from Python.
 
 ```python
 Layout3D:
@@ -30,8 +31,12 @@ Layout3D:
     post_processing: False #Post-processing effects (bloom, hdr,...)
 ```
 #### Step 3
-Creating nodes. 
-Nodes may be a set of 3D meshes (obj format is only supported at now). Be sure to set the UV mapping correctly. If you add a FloatLayout to the node it will be used as texture for the meshes and as a bonus you will be able to interact with the widgets that are seen on the surface of the meshes, no matter the shape. The possibilities are endless. Just use your imagination. 
+Create nodes and add them to the Layout3D.
+Nodes may be a set of 3D meshes (obj format is only supported at now). Be sure
+to set the UV mapping correctly. If you add a FloatLayout to the node it will be
+used as texture for the meshes and as a bonus you will be able to interact with
+the widgets that are seen on the surface of the meshes, no matter the shape. The
+possibilities are endless. Just use your imagination.
 
 ```python
     Node:
@@ -44,8 +49,10 @@ Nodes may be a set of 3D meshes (obj format is only supported at now). Be sure t
         meshes: ("./data/obj/sphere.obj", ) #List of meshes (obj only)
 ```        
 #### Step 4
-Creating interaction widgets.
-The root widgets for node must be a Layout. All its children will be use as texture of the set of meshes and as aforementioned you will be able to interact with the widgets.
+Create interaction widgets.
+The root widgets for Nodes must be a Layout3D. All its children will use this as
+texture for the set of meshes. As mentioned, you will be able to interact
+with the widgets.
 
 ```python
         FloatLayout:
