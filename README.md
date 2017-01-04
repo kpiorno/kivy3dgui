@@ -27,8 +27,8 @@ Create a Layout3D, which you can also do from Python.
 Layout3D:
     id: par #id for Layout3D, could be referenced just like any Kivy Widget
     size_hint: (1.0, 1.0)
-    canvas_size: (1366, 768) #Canvas resolution
-    post_processing: False #Post-processing effects (bloom, hdr,...)
+    canvas_size: (1366, 768) # Canvas resolution
+    post_processing: False # Post-processing effects (bloom, hdr,...)
 ```
 #### Step 3
 Create nodes and add them to the Layout3D.
@@ -42,9 +42,9 @@ possibilities are endless. Just use your imagination.
     Node:
         id: Node1
         name: 'Node 0'
-        rotate: (90, 0.3, 1, 0)
-        scale: (0.4, 0.4, 0.4)
-        translate: (20, -10.0, -110)
+        rotate: (90, 0.3, 1, 0)  # Angle and x, y, z axis of rotation
+        scale: (0.4, 0.4, 0.4)  # x, y, z of scaling matrix
+        translate: (20, -10.0, -110)  # x, y, z of translation matrix
         effect: True
         meshes: ("./data/obj/sphere.obj", ) #List of meshes (obj only)
 ```        
