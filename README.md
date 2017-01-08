@@ -30,28 +30,44 @@ Layout3D:
     canvas_size: (1366, 768) # Canvas resolution
     post_processing: False # Post-processing effects (bloom, hdr,...)
 ```
+
+You can change the position of the camera using the 'lookat' property,
+which sets the [gluLookAt transformation](https://www.opengl.org/sdk/docs/man2/xhtml/gluLookAt.xml).
+It defaults to (0, 0, 10, 0, 0, 0, 0, 1, 0).
+
+
 #### Step 3
-Create nodes and add them to the Layout3D.
+Create nodes and add them to the Layout3D. Nodes are used to apply 3D
+effects, transformations and display 3D meshes in Kivy layouts.
+
 Nodes may be a set of 3D meshes (obj format is only supported at now). Be sure
 to set the UV mapping correctly. If you add a FloatLayout to the node it will be
-used as texture for the meshes and as a bonus you will be able to interact with
-the widgets that are seen on the surface of the meshes, no matter the shape. The
-possibilities are endless. Just use your imagination.
+used as a texture for the meshes and you will be able to interact with
+the widgets that are seen on the surface of the meshes, no matter the shape:
+touch events are accurately translated to preserve behavior.
+
+The possibilities are endless. Just use your imagination.
 
 ```python
     Node:
         id: Node1
         name: 'Node 0'
-        rotate: (90, 0.3, 1, 0)  # Angle and x, y, z axis of rotation
+        rotate: (90, 0.3, 1, 0)  # Angle and x, y, z axis of the rotation matrix
         scale: (0.4, 0.4, 0.4)  # x, y, z of scaling matrix
         translate: (20, -10.0, -110)  # x, y, z of translation matrix
         effect: True
         meshes: ("./data/obj/sphere.obj", ) #List of meshes (obj only)
-```        
+```
+For more detail on these parameters and matrices, please see the
+[glRotate matrix](https://www.opengl.org/sdk/docs/man2/xhtml/glRotate.xml),
+[glScale matrix](https://www.opengl.org/sdk/docs/man2/xhtml/glScale.xml)
+and [glTranslate](https://www.opengl.org/sdk/docs/man2/xhtml/glTranslate.xml)
+documentation.
+
 #### Step 4
 Create interaction widgets.
 The root widgets for Nodes must be a Layout3D. All its children will use this as
-texture for the set of meshes. As mentioned, you will be able to interact
+the texture for the set of meshes. As mentioned, you will be able to interact
 with the widgets.
 
 ```python
