@@ -22,7 +22,7 @@ from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import ListProperty, NumericProperty
+from kivy.properties import ListProperty, NumericProperty, ListProperty
 from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
@@ -42,7 +42,7 @@ label_debug = Label(pos_hint={"x": 0.2, "y": 0.2},
 
 
 class Canvas3D(FloatLayout):
-    adding_queue = []
+    adding_queue = ListProperty([])
     '''adding_queue_doc
     '''
 
@@ -71,7 +71,7 @@ class Canvas3D(FloatLayout):
     ''' Motion FBO translate value
     '''
 
-    nodes = []
+    nodes = ListProperty([])
     ''' Nodes list
     '''
 
@@ -121,6 +121,7 @@ class Canvas3D(FloatLayout):
         PICKING_BUFFER_SIZE = kwargs.get("canvas_size", Window.size)
         self.shadow = True
         self.picking = True
+        self.fbo_list = {}
         self.co = self.canvas
         self.canvas = RenderContext(compute_normal_mat=False)
 
@@ -168,7 +169,7 @@ class Canvas3D(FloatLayout):
             self.init_picking()
         self.init_motion_blur()
         super(Canvas3D, self).__init__(**kwargs)
-        Clock.schedule_interval(self.update_glsl, 1 / 60.)
+        self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
 
     def pitch(self, value, time):
@@ -429,6 +430,21 @@ class Canvas3D(FloatLayout):
             self.update_fbo(largs[0])
             # label.text = str(Clock.get_rfps())
 
+        if self.parent.parent is None:
+            # del self.parent
+
+            self.parent.canvas3d = None
+            self.fbo_list.clear()
+            self.fbo = None
+            for a in self.nodes:
+                a.remove_a()
+            self.nodes = []
+            self.parent._nodes = []
+            self.parent.clear_widgets()
+            self.adding_queue = []
+            self.nt.cancel()
+            # self.parent = None
+
     def on_size(self, instance, value):
         self._update_fbo = 0
         self.picking_fbo.size = PICKING_BUFFER_SIZE
@@ -562,6 +578,6 @@ class Canvas3D(FloatLayout):
                 t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
                 ret = self.fbo_list[float_str].on_touch_up(t_touch)
                 return ret
-                #ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
-                #return ret
+                # ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
+                # return ret
         return True

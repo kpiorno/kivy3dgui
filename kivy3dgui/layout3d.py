@@ -24,14 +24,14 @@ from kivy3dgui.canvas3d import Canvas3D
 from kivy3dgui import effectwidget
 from kivy3dgui.effectwidget import BlurEffectWidget
 from kivy3dgui.node import Node
-from kivy.properties import BooleanProperty, ListProperty
+from kivy.properties import BooleanProperty, ListProperty, ObjectProperty
 from kivy.graphics import *
 from kivy.core.window import Window
-from kivy.graphics.texture import Texture
+#from kivy.graphics.texture import Texture
 
 
 class Layout3D(FloatLayout):
-    canvas3d = None
+    canvas3d = ObjectProperty(None, allownone=True)
     '''canvas3d
     '''
 
@@ -43,7 +43,7 @@ class Layout3D(FloatLayout):
     '''shadow
     '''
 
-    _nodes = []
+    _nodes = ListProperty([])
     '''_nodes
     '''
 
@@ -88,8 +88,6 @@ class Layout3D(FloatLayout):
         effectwidget.C_SIZE = value
         canvas3d.PICKING_BUFFER_SIZE = value
 
-
-
     def walk(self, value, time):
         self.canvas3d.walk(value, time)
 
@@ -109,6 +107,7 @@ class Layout3D(FloatLayout):
 
     def _add_node(self, *args):
         self.canvas3d.add_node(args[0])
+        pass
 
     def on_post_processing(self, widget, value):
         if not self._init_request[0]:
@@ -133,6 +132,7 @@ class Layout3D(FloatLayout):
         widget = largs[0]
 
         if isinstance(widget, Node):
+
             #print(widget.fbo_widget)
             float_str = str(self.canvas3d.current_id)[0:4]
             self.canvas3d.fbo_list[float_str] = widget.fbo_widget
@@ -146,8 +146,10 @@ class Layout3D(FloatLayout):
                 widget.parent = self.canvas3d
                 try:
                     self._nodes.append(widget.__self__)
+                    pass
                 except:
                     self._nodes.append(widget)
+                    pass
 
             self.canvas3d.add_widget(widget.fbo_widget)
             """Check the increment"""
@@ -162,3 +164,4 @@ class Layout3D(FloatLayout):
         for e in self.children:
             if e.collide_point(touch.x, touch.y):
                 return e.on_touch_up(touch)
+

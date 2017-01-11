@@ -191,7 +191,7 @@ class Node(Widget):
 
         self.has_gui = False
         self.fbo_widget = FboFloatLayout(size=canvas3d.PICKING_BUFFER_SIZE, size_hint=(None, None),
-                                         pos_hint={"x": 0.0, "y": 0.0})
+                                         pos_hint={"x": 0.0, "y": 0.0}, clear_color=(0, 0, 0, 1.0))
 
         super(Widget, self).__init__(**kwargs)
 
@@ -347,6 +347,10 @@ class Node(Widget):
                         self.mesh = o
 
         self.init += 1
+
+    def remove_a(self):
+        self.fbo_widget.clear_widgets()
+        self.fbo_widget = None
 
 
 
