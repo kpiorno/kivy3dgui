@@ -91,7 +91,7 @@ class Canvas3D(FloatLayout):
     ''' List of elements attached to a Mesh
     '''
 
-    shadow_threshold = 1.0
+    shadow_threshold = NumericProperty(1.0)
     ''' Shadow Distance
     '''
 
@@ -114,6 +114,16 @@ class Canvas3D(FloatLayout):
     rot_angle = 0.0
     '''rot_angle value
     '''
+
+    _shadow_pos = ListProperty([0, -50, -100])
+    '''shadow_pos
+    '''
+
+    _shadow_offset = NumericProperty(0)
+    '''shadow_offset
+    '''
+
+    #_shadow_pos = ListProperty([-0.5, -50, -100])
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
@@ -352,7 +362,8 @@ class Canvas3D(FloatLayout):
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
-        depthViewMatrix = Matrix().look_at(-0.5, -50, -100, 0, 0, 0, 0, 1, 0)
+        _shadow_pos = self._shadow_pos
+        depthViewMatrix = Matrix().look_at(_shadow_pos[0], _shadow_pos[1], _shadow_pos[2] + self._shadow_offset, 0, 0, 0, 0, 1, 0)
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)
 
@@ -419,7 +430,9 @@ class Canvas3D(FloatLayout):
         depthProjectionMatrix = Matrix().view_clip(-100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
-        depthViewMatrix = Matrix().look_at(-0.5, -50, -100, 0, 0, 0, 0, 1, 0)
+        _shadow_pos = self._shadow_pos
+        depthViewMatrix = Matrix().look_at(_shadow_pos[0], _shadow_pos[1], _shadow_pos[2], 0, 0, 0, 0, 1, 0)
+
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)
         self.canvas['depthMVP'] = depthMVP

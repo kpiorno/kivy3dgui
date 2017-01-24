@@ -24,7 +24,7 @@ from kivy3dgui.canvas3d import Canvas3D
 from kivy3dgui import effectwidget
 from kivy3dgui.effectwidget import BlurEffectWidget
 from kivy3dgui.node import Node
-from kivy.properties import BooleanProperty, ListProperty, ObjectProperty
+from kivy.properties import BooleanProperty, ListProperty, ObjectProperty, NumericProperty
 from kivy.graphics import *
 from kivy.core.window import Window
 #from kivy.graphics.texture import Texture
@@ -55,6 +55,12 @@ class Layout3D(FloatLayout):
     '''_look_at
     '''
 
+    shadow_offset = NumericProperty(0)
+
+    shadow_origin = ListProperty([0, -90, -100])
+
+    shadow_threshold = NumericProperty(1.0)
+
     canvas_size = ListProperty(Window.size)
 
     def __init__(self, **kwargs):
@@ -69,6 +75,10 @@ class Layout3D(FloatLayout):
 
         self.create_canvas()
         self.bind(look_at=self.canvas3d.setter('look_at'))
+        self.bind(shadow_offset=self.canvas3d.setter('_shadow_offset'))
+        self.bind(shadow_threshold=self.canvas3d.setter('shadow_threshold'))
+        self.bind(shadow_origin=self.canvas3d.setter('_shadow_pos'))
+
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
 
