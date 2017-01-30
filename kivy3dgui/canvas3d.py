@@ -115,8 +115,12 @@ class Canvas3D(FloatLayout):
     '''rot_angle value
     '''
 
-    _shadow_pos = ListProperty([0, -50, -100])
+    _shadow_pos = ListProperty([0, 0, 0])
     '''shadow_pos
+    '''
+
+    _shadow_target = ListProperty([0, -50, -100])
+    '''shadow_target
     '''
 
     _shadow_offset = NumericProperty(0)
@@ -354,7 +358,7 @@ class Canvas3D(FloatLayout):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
         asp = (width / float(height))
-        proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
+        proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 1600, 1)
         proj = Matrix()
         proj.perspective(self.perspective_value, asp, 1, 1000)
 
@@ -363,7 +367,10 @@ class Canvas3D(FloatLayout):
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
         _shadow_pos = self._shadow_pos
-        depthViewMatrix = Matrix().look_at(_shadow_pos[0], _shadow_pos[1], _shadow_pos[2] + self._shadow_offset, 0, 0, 0, 0, 1, 0)
+        _shadow_target = self._shadow_target
+
+        depthViewMatrix = Matrix().look_at(_shadow_target[0], _shadow_target[1], _shadow_target[2] + self._shadow_offset,
+                                           _shadow_pos[0], _shadow_pos[1], _shadow_pos[2], 0, 1, 0)
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)
 
@@ -402,6 +409,7 @@ class Canvas3D(FloatLayout):
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
         # self.perspective_value += 0.04
+        #self.fbo.texture.save("here.png")
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
@@ -431,7 +439,10 @@ class Canvas3D(FloatLayout):
                                                    -100 * self.shadow_threshold, 100 * self.shadow_threshold,
                                                    -100 * self.shadow_threshold, 200 * self.shadow_threshold * 2, 0)
         _shadow_pos = self._shadow_pos
-        depthViewMatrix = Matrix().look_at(_shadow_pos[0], _shadow_pos[1], _shadow_pos[2], 0, 0, 0, 0, 1, 0)
+        _shadow_target = self._shadow_target
+        depthViewMatrix = Matrix().look_at(_shadow_target[0], _shadow_target[1],
+                                           _shadow_target[2] + self._shadow_offset,
+                                           _shadow_pos[0], _shadow_pos[1], _shadow_pos[2], 0, 1, 0)
 
         depthModelMatrix = Matrix().identity()
         depthMVP = depthProjectionMatrix.multiply(depthViewMatrix).multiply(depthModelMatrix)

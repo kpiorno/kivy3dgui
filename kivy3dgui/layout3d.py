@@ -57,7 +57,9 @@ class Layout3D(FloatLayout):
 
     shadow_offset = NumericProperty(0)
 
-    shadow_origin = ListProperty([0, -90, -100])
+    shadow_origin = ListProperty([0, 0, 0])
+
+    shadow_target = ListProperty([0, -90, -100])
 
     shadow_threshold = NumericProperty(1.0)
 
@@ -78,6 +80,7 @@ class Layout3D(FloatLayout):
         self.bind(shadow_offset=self.canvas3d.setter('_shadow_offset'))
         self.bind(shadow_threshold=self.canvas3d.setter('shadow_threshold'))
         self.bind(shadow_origin=self.canvas3d.setter('_shadow_pos'))
+        self.bind(shadow_target=self.canvas3d.setter('_shadow_target'))
 
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
@@ -174,4 +177,4 @@ class Layout3D(FloatLayout):
         for e in self.children:
             if e.collide_point(touch.x, touch.y):
                 return e.on_touch_up(touch)
-
+        #super(Layout3D, self).on_touch_up(touch)
