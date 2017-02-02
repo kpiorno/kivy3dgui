@@ -65,6 +65,8 @@ class Layout3D(FloatLayout):
 
     canvas_size = ListProperty(Window.size)
 
+    picking_scale = NumericProperty(1.0)
+
     def __init__(self, **kwargs):
 
         self.canvas_size = kwargs.get("canvas_size", Window.size)
@@ -81,6 +83,7 @@ class Layout3D(FloatLayout):
         self.bind(shadow_threshold=self.canvas3d.setter('shadow_threshold'))
         self.bind(shadow_origin=self.canvas3d.setter('_shadow_pos'))
         self.bind(shadow_target=self.canvas3d.setter('_shadow_target'))
+        self.bind(picking_scale=self.canvas3d.setter('picking_scale'))
 
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
@@ -174,7 +177,10 @@ class Layout3D(FloatLayout):
             return ret
 
     def on_touch_up(self, touch):
+        ret = False
         for e in self.children:
             if e.collide_point(touch.x, touch.y):
-                return e.on_touch_up(touch)
-        #super(Layout3D, self).on_touch_up(touch)
+                ret = e.on_touch_up(touch)
+                break
+
+        return ret

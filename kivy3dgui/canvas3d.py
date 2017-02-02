@@ -127,10 +127,14 @@ class Canvas3D(FloatLayout):
     '''shadow_offset
     '''
 
-    #_shadow_pos = ListProperty([-0.5, -50, -100])
+    picking_scale = NumericProperty(0)
+    '''shadow_offset
+    '''
+    MPICKING_BUFFER_SIZE = ListProperty([320, 240])
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
+
         global PICKING_BUFFER_SIZE
         PICKING_BUFFER_SIZE = kwargs.get("canvas_size", Window.size)
         self.shadow = True
@@ -185,6 +189,10 @@ class Canvas3D(FloatLayout):
         super(Canvas3D, self).__init__(**kwargs)
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
+
+    def on_picking_scale(self, *args):
+        self.MPICKING_BUFFER_SIZE = [PICKING_BUFFER_SIZE[0] * self.picking_scale,
+                                     PICKING_BUFFER_SIZE[1] * self.picking_scale]
 
     def pitch(self, value, time):
         self.rotate = [value, 1.0, 0.0, 0.0]
@@ -258,10 +266,11 @@ class Canvas3D(FloatLayout):
         self._instruction.add(Callback(self.setup_gl_context_shadow))
 
     def create_picking_fbo(self):
-        self.picking_fbo = Fbo(size=PICKING_BUFFER_SIZE,
+        self.picking_fbo = Fbo(size=self.MPICKING_BUFFER_SIZE,
                                with_depthbuffer=True,
                                compute_normal_mat=True,
                                clear_color=(0.0, 0.0, 0.0, 0.0))
+
 
         self.picking_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/selection.glsl')
 
@@ -409,7 +418,7 @@ class Canvas3D(FloatLayout):
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
         # self.perspective_value += 0.04
-        #self.fbo.texture.save("here.png")
+        #self.picking_fbo.texture.save("debug.png")
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
@@ -471,7 +480,7 @@ class Canvas3D(FloatLayout):
 
     def on_size(self, instance, value):
         self._update_fbo = 0
-        self.picking_fbo.size = PICKING_BUFFER_SIZE
+        self.picking_fbo.size = self.MPICKING_BUFFER_SIZE
         self.motion_blur_fbo.size = PICKING_BUFFER_SIZE
 
     def setup_scene(self):
@@ -487,8 +496,8 @@ class Canvas3D(FloatLayout):
         return x_angle, y_angle
 
     def get_pixel_color(self, x, y):
-        w = PICKING_BUFFER_SIZE[0]
-        h = PICKING_BUFFER_SIZE[1]
+        w = self.MPICKING_BUFFER_SIZE[0]
+        h = self.MPICKING_BUFFER_SIZE[1]
         x = int(x)
         y = int(y)
         p = self.picking_fbo.pixels
@@ -505,17 +514,19 @@ class Canvas3D(FloatLayout):
         if move:
             _x = x / _size[0]
             _y = y / _size[1]
-            return _x * PICKING_BUFFER_SIZE[0], _y * PICKING_BUFFER_SIZE[1]
+            return _x * self.MPICKING_BUFFER_SIZE[0], _y * self.MPICKING_BUFFER_SIZE[1]
 
         _x = x / _size[0]
         _y = y / _size[1]
-        return _x * PICKING_BUFFER_SIZE[0], _y * PICKING_BUFFER_SIZE[1]
+        return _x * self.MPICKING_BUFFER_SIZE[0], _y * self.MPICKING_BUFFER_SIZE[1]
 
     def on_touch_down(self, touch):
         # transform the touch coordinate to local space
         x, y = self.get_fixed_points(touch.x, touch.y)
         pc = self.get_pixel_color(x, y)
-        if pc == []:
+        if not pc:
+            return False
+        if pc[0] == 0:
             return False
 
         pc[1] = pc[1]
@@ -535,14 +546,20 @@ class Canvas3D(FloatLayout):
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
                 touch.ud["pick_value"] = float_str
-                return self.fbo_list[float_str].on_touch_down(t_touch)
+                ret = self.fbo_list[float_str].on_touch_down(t_touch)
+                return True
+                #return ret
+        else:
+            return False
         return True
 
     def on_touch_move(self, touch):
         x, y = self.get_fixed_points(touch.x, touch.y)
         pc = self.get_pixel_color(x, y)
-        if pc == []:
-            return
+        if not pc:
+            return False
+        if pc[0] == 0:
+            return False
 
         pc[1] = pc[1]
         pc[2] = pc[2]
@@ -576,15 +593,21 @@ class Canvas3D(FloatLayout):
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
                 ret = self.fbo_list[float_str].dispatch("on_touch_move", t_touch)
-                return ret
+                return True
+                #return ret
+        else:
+            return False
 
         return True
 
     def on_touch_up(self, touch):
         x, y = self.get_fixed_points(touch.x, touch.y)
         pc = self.get_pixel_color(x, y)
-        if pc == []:
-            return True
+        if not pc:
+            return False
+        if pc[0] == 0:
+            return False
+
         pc[1] = pc[1]
         pc[2] = pc[2]
         t_touch = copy.copy(touch)
@@ -601,7 +624,10 @@ class Canvas3D(FloatLayout):
                 t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
                 t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
                 ret = self.fbo_list[float_str].on_touch_up(t_touch)
-                return ret
+                return True
+                #return ret
                 # ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
                 # return ret
+        else:
+            return False
         return True
