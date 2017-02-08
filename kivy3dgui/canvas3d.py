@@ -419,6 +419,7 @@ class Canvas3D(FloatLayout):
         self.fbo['val_sin'] = (self.alpha, 0.0)
         # self.perspective_value += 0.04
         #self.picking_fbo.texture.save("debug.png")
+        #self.fbo.texture.save("debug_shadows.png")
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
@@ -579,9 +580,10 @@ class Canvas3D(FloatLayout):
         t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
         t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
 
-        if 'right' in t_touch.button:
-            t_touch.pos = (t_touch.x, t_touch.y)
-            return
+        if hasattr(touch, 'button'):
+            if 'right' in t_touch.button:
+                t_touch.pos = (t_touch.x, t_touch.y)
+                return
 
         t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
         t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])

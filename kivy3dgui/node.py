@@ -6,7 +6,8 @@ from kivy.graphics import *
 from kivy.resources import resource_find
 from kivy3dgui.objloader import ObjFile
 from kivy.uix.widget import Widget
-from kivy.properties import BooleanProperty, ListProperty, StringProperty
+from kivy.properties import (BooleanProperty, ListProperty, StringProperty,
+                             NumericProperty)
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
 from kivy3dgui import canvas3d
@@ -155,6 +156,7 @@ class Node(Widget):
     flip_coords = BooleanProperty(True)
     lighting = BooleanProperty(True)
     texture = StringProperty("")
+    alpha = NumericProperty(1.0)
     light_intensity = [1.0, 1.0, 1.0, 1.0]
     old_transformation = [1.0, 0.0, 0.0, 1300.0, True]
     orientation_vector = [1.0, 1.0, 1.0, 1.0]
@@ -185,6 +187,7 @@ class Node(Widget):
         self.effect = kwargs.get("effect", False)
         self.current_anim_index = kwargs.get("current_anim_index", 0)
         self.light_intensity = kwargs.get("light_intensity", [1.0, 1.0, 1.0, 1.0])
+        self.alpha = kwargs.get("alpha", 1.0)
         self.objs = []
         if '__no_builder' in kwargs:
             self._start_objs = False
@@ -193,7 +196,7 @@ class Node(Widget):
         self.fbo_widget = FboFloatLayout(size=canvas3d.PICKING_BUFFER_SIZE, size_hint=(None, None),
                                          pos_hint={"x": 0.0, "y": 0.0}, clear_color=(0, 0, 0, 1.0))
 
-        super(Widget, self).__init__(**kwargs)
+        super(Node, self).__init__(**kwargs)
 
     def get_pos(self):
         return self.orientation_vector[0:3]
@@ -274,7 +277,8 @@ class Node(Widget):
             s = ChangeState(enabled_shadow=(float(self.receive_shadows)),
                         lighting=(float(self.lighting)),
                         light_intensity=self.light_intensity,
-                        flip_coords=(float(self.flip_coords)))
+                        flip_coords=(float(self.flip_coords)),
+                        alpha=(float(self.alpha)))
             self._translate = Translate(*self.translate)
             self._rotate = Rotate(*self.rotate)
             self._scale = Scale(*self.scale)
@@ -313,15 +317,16 @@ class Node(Widget):
                 m.vertices = res
                 _vertices = m.vertices
                 _indices = m.indices
-                mesh = Mesh(
-                    vertices=_vertices,
-                    indices=_indices,
-                    fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
-                         (b'vert_pos', 2, 'float')],
-                    mode='triangles',
-                    source=e+".png",
-                )
-                self.objs.append(mesh)
+                if self.init != 3:
+                    mesh = Mesh(
+                        vertices=_vertices,
+                        indices=_indices,
+                        fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
+                             (b'vert_pos', 2, 'float')],
+                        mode='triangles',
+                        source=e+".png",
+                    )
+                    self.objs.append(mesh)
 
             if (".dae" in e) or ('.xml' in e and not ".mesh.xml" in e):
                 raise Exception("Collada not yet implemented")

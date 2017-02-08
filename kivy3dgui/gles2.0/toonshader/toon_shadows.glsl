@@ -98,6 +98,7 @@ varying vec4 normal_vec;
 varying vec3 vertex_pos;
 varying vec2 tex_coord0;
 varying float edge;
+uniform float alpha;
 uniform float enabled_shadow;
 uniform float lighting;
 uniform float flip_coords;
@@ -123,8 +124,8 @@ void main (void){
     vec2 t_coords = tex_coord0;
     if (int(flip_coords) == 1)
         t_coords = vec2(tex_coord0.x, 1.0 - tex_coord0.y);
-    
-    
+    //t_coords = vec2(tex_coord0.x, tex_coord0.y);
+
     color1 = texture2D( texture0, t_coords );
     vec4 color2;
     
@@ -176,6 +177,7 @@ void main (void){
 	gl_FragColor = vec4(0, 0, 0, 1.0);
     vec4 f_color;
     f_color = vec4((color1).xyz*visibility*diffuse, res_alpha);
+    f_color.a = alpha;
     gl_FragColor = f_color;
 	
 
