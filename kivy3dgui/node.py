@@ -160,12 +160,17 @@ class Node(Widget):
     light_intensity = [1.0, 1.0, 1.0, 1.0]
     old_transformation = [1.0, 0.0, 0.0, 1300.0, True]
     orientation_vector = [1.0, 1.0, 1.0, 1.0]
+    _instructions = ListProperty([])
+    _shadow_instructions = ListProperty([])
+    _picking_instructions = ListProperty([])
+    _blur_instructions = ListProperty([])
+
     _translate = None
     _rotate = None
     _scale = None
     vertices = []
     mesh = 0
-    objs = []
+    objs = ListProperty([])
     meshes = ListProperty([])
     bones_data = []
     skeletons = []
@@ -212,6 +217,8 @@ class Node(Widget):
             self.fbo_widget.alpha_blending = self.alpha_blending
 
     def on_meshes(self, widget, value):
+        if self.init == -1:
+            return
         self._objs = value[:]
         if not self._start_objs:
             for obj in value[:]:
@@ -274,7 +281,7 @@ class Node(Widget):
     def start(self):
         if self.init == 0:
             Color(1, 1, 1, 1)
-            s = ChangeState(enabled_shadow=(float(self.receive_shadows)),
+            state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
                         lighting=(float(self.lighting)),
                         light_intensity=self.light_intensity,
                         flip_coords=(float(self.flip_coords)),
@@ -282,24 +289,42 @@ class Node(Widget):
             self._translate = Translate(*self.translate)
             self._rotate = Rotate(*self.rotate)
             self._scale = Scale(*self.scale)
+            self._instructions.append(state)
+            self._instructions.append(self._translate)
+            self._instructions.append(self._rotate)
+            self._instructions.append(self._scale)
         elif self.init == 1:
-            ChangeState(cast_shadows=(float(self.cast_shadows)))
+            state = ChangeState(cast_shadows=(float(self.cast_shadows)))
             self._shadow_translate = Translate(*self.translate)
             self._shadow_rotate = Rotate(*self.rotate)
             self._shadow_scale = Scale(*self.scale)
+            self._shadow_instructions.append(state)
+            self._shadow_instructions.append(self._shadow_translate)
+            self._shadow_instructions.append(self._shadow_rotate)
+            self._shadow_instructions.append(self._shadow_scale)
+
         elif self.init == 2:
             range = 0
             if self.effect:
                 range = 0.50
-            ChangeState(id_color=(round(self.pick_id + range, 2), float(self.effect), 0.0))
+            state = ChangeState(id_color=(round(self.pick_id + range, 2), float(self.effect), 0.0))
             self._picking_translate = Translate(*self.translate)
             self._picking_rotate = Rotate(*self.rotate)
             self._picking_scale = Scale(*self.scale)
+            self._picking_instructions.append(state)
+            self._picking_instructions.append(self._picking_translate)
+            self._picking_instructions.append(self._picking_rotate)
+            self._picking_instructions.append(self._picking_scale)
+
         elif self.init == 3:
-            ChangeState(id=(self.motion_id))
+            state = ChangeState(id=(self.motion_id))
             self._motion_blur_translate = Translate(*self.translate)
             self._motion_blur_rotate = Rotate(*self.rotate)
             self._motion_blur_scale = Scale(*self.scale)
+            self._blur_instructions.append(state)
+            self._blur_instructions.append(self._motion_blur_translate)
+            self._blur_instructions.append(self._motion_blur_rotate)
+            self._blur_instructions.append(self._motion_blur_scale)
 
         UpdateNormalMatrix()
         for e in self._objs:
@@ -327,6 +352,14 @@ class Node(Widget):
                         source=e+".png",
                     )
                     self.objs.append(mesh)
+                    if self.init == 0:
+                        self._instructions.append(mesh)
+                    if self.init == 1:
+                        self._shadow_instructions.append(mesh)
+                    if self.init == 2:
+                        self._picking_instructions.append(mesh)
+                    if self.init == 3:
+                        self._blur_instructions.append(mesh)
 
             if (".dae" in e) or ('.xml' in e and not ".mesh.xml" in e):
                 raise Exception("Collada not yet implemented")
@@ -354,8 +387,20 @@ class Node(Widget):
         self.init += 1
 
     def remove_a(self):
-        self.fbo_widget.clear_widgets()
-        self.fbo_widget = None
+        if self.fbo_widget:
+            self.fbo_widget.clear_widgets()
+            self.fbo_widget = None
+
+    def clear(self):
+        self.init = -1
+        self.meshes = []
+
+        self.obj = []
+
+        self.remove_a()
+
+        self.vertices = []
+
 
 
 

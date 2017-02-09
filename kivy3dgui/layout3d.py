@@ -55,6 +55,8 @@ class Layout3D(FloatLayout):
     '''_look_at
     '''
 
+    _id_stack = ListProperty([])
+
     shadow_offset = NumericProperty(0)
 
     shadow_origin = ListProperty([0, 0, 0])
@@ -150,9 +152,16 @@ class Layout3D(FloatLayout):
         if isinstance(widget, Node):
 
             #print(widget.fbo_widget)
-            float_str = str(self.canvas3d.current_id)[0:4]
+            inc = True
+            c_id = self.canvas3d.current_id
+            if self._id_stack:
+                top = self._id_stack[-1]
+                c_id = top
+                self._id_stack.remove(top)
+                inc = False
+            float_str = str(c_id)[0:4]
             self.canvas3d.fbo_list[float_str] = widget.fbo_widget
-            widget.pick_id = self.canvas3d.current_id
+            widget.pick_id = c_id
 
             if widget._start_objs:
                 if widget._objs != []:
@@ -169,12 +178,28 @@ class Layout3D(FloatLayout):
 
             self.canvas3d.add_widget(widget.fbo_widget)
             """Check the increment"""
-            self.canvas3d.current_id += 0.01
-            self.canvas3d.current_id = round(self.canvas3d.current_id, 2)
+            if inc:
+                self.canvas3d.current_id += 0.01
+                self.canvas3d.current_id = round(self.canvas3d.current_id, 2)
             return None
         else:
             ret = super(Layout3D, self).add_widget(*largs)
             return ret
+
+    def remove_widget(self, widget):
+        if isinstance(widget, Node):
+            if widget in self._nodes:
+                self._nodes.remove(widget)
+            float_str = str(widget.pick_id)[0:4]
+            if float_str in self.canvas3d.fbo_list:
+                #self.canvas3d.fbo_list.remove(float_str)
+                self.canvas3d.fbo_list.pop(float_str)
+
+            id = widget.pick_id
+            self._id_stack.append(id)
+            self.canvas3d._remove_node(widget)
+        else:
+            super(Layout3D, self).remove_widget(widget)
 
     def on_touch_up(self, touch):
         ret = False

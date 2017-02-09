@@ -247,6 +247,29 @@ class Canvas3D(FloatLayout):
         self.canvas = canvas
         return ret
 
+    def _remove_node(self, widget):
+        if widget in self.nodes:
+            self.nodes.remove(widget)
+
+        for e in widget._instructions:
+            self.canvas.before.remove(e)
+
+        widget._instructions = []
+
+        for e in widget._shadow_instructions:
+            self.fbo.remove(e)
+        widget._shadow_instructions = []
+
+        for e in widget._picking_instructions:
+            self.picking_fbo.remove(e)
+        widget._pick_instruction = []
+
+        for e in widget._blur_instructions:
+            self.motion_blur_fbo.remove(e)
+        widget._blur_instructions = []
+
+        widget.clear()
+
     def init_fbo(self):
         with self.fbo:
             self._translate_fbo = Translate(0, 0, 0)
