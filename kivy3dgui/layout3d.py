@@ -18,7 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.image import Image
 from kivy3dgui import canvas3d
 from kivy3dgui.canvas3d import Canvas3D
 from kivy3dgui import effectwidget
@@ -27,7 +29,8 @@ from kivy3dgui.node import Node
 from kivy.properties import BooleanProperty, ListProperty, ObjectProperty, NumericProperty
 from kivy.graphics import *
 from kivy.core.window import Window
-#from kivy.graphics.texture import Texture
+
+# from kivy.graphics.texture import Texture
 
 
 class Layout3D(FloatLayout):
@@ -73,6 +76,7 @@ class Layout3D(FloatLayout):
 
         self.canvas_size = kwargs.get("canvas_size", Window.size)
         super(Layout3D, self).__init__(**kwargs)
+        self._trigger_layout = Clock.create_trigger(self.do_layout, -1)
         effectwidget.C_SIZE = self.canvas_size
 
         with self.canvas.before:
@@ -86,6 +90,7 @@ class Layout3D(FloatLayout):
         self.bind(shadow_origin=self.canvas3d.setter('_shadow_pos'))
         self.bind(shadow_target=self.canvas3d.setter('_shadow_target'))
         self.bind(picking_scale=self.canvas3d.setter('picking_scale'))
+        self.bind(canvas_size=self.canvas3d.setter('canvas_size'))
 
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
                                               motion_effect=self.canvas3d.motion_blur_fbo)
@@ -101,6 +106,13 @@ class Layout3D(FloatLayout):
             self.add_widget(label_debug)
         except Exception as w:
             pass
+        self.render_texture = Image(size_hint=(1.0, 1.0),
+                                    allow_stretch=True,
+                                    keep_ratio=False)
+        self.add_widget(self.render_texture, 100000)
+        self.render_texture.texture = self.canvas3d.canvas.texture
+        self.bind(pos=self.render_texture.setter('pos'))
+        self.bind(size=self.render_texture.setter('size'))
 
     def on_canvas_size(self, widget, value):
         effectwidget.C_SIZE = value
@@ -151,7 +163,7 @@ class Layout3D(FloatLayout):
 
         if isinstance(widget, Node):
 
-            #print(widget.fbo_widget)
+            # print(widget.fbo_widget)
             inc = True
             c_id = self.canvas3d.current_id
             if self._id_stack:
@@ -192,7 +204,7 @@ class Layout3D(FloatLayout):
                 self._nodes.remove(widget)
             float_str = str(widget.pick_id)[0:4]
             if float_str in self.canvas3d.fbo_list:
-                #self.canvas3d.fbo_list.remove(float_str)
+                # self.canvas3d.fbo_list.remove(float_str)
                 self.canvas3d.fbo_list.pop(float_str)
 
             id = widget.pick_id
@@ -204,8 +216,8 @@ class Layout3D(FloatLayout):
     def on_touch_up(self, touch):
         ret = False
         for e in self.children:
-            if e.collide_point(touch.x, touch.y):
-                ret = e.on_touch_up(touch)
-                break
-
+            if not isinstance(e, Image):
+                if e.collide_point(touch.x, touch.y):
+                    ret = e.on_touch_up(touch)
+                    break
         return ret

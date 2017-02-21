@@ -132,8 +132,11 @@ class Canvas3D(FloatLayout):
     '''
     MPICKING_BUFFER_SIZE = ListProperty([320, 240])
 
+    canvas_size = ListProperty([1366, 768])
+
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
+        self.canvas_size = 1366, 768
 
         global PICKING_BUFFER_SIZE
         PICKING_BUFFER_SIZE = kwargs.get("canvas_size", Window.size)
@@ -141,7 +144,11 @@ class Canvas3D(FloatLayout):
         self.picking = True
         self.fbo_list = {}
         self.co = self.canvas
-        self.canvas = RenderContext(compute_normal_mat=False)
+        #self.canvas = RenderContext(compute_normal_mat=False)
+        self.canvas = Fbo(size=self.canvas_size,
+                       with_depthbuffer=True,
+                       compute_normal_mat=True,
+                       clear_color=(1.0, 1.0, 1.0, 0.0))
 
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
@@ -351,6 +358,7 @@ class Canvas3D(FloatLayout):
         self.picking_fbo.clear_buffer()
 
     def check_context(self, *args):
+        self.canvas.clear_buffer()
         pass
 
     def add_node(self, node):
@@ -389,6 +397,7 @@ class Canvas3D(FloatLayout):
     def update_fbo(self, time):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
+
         asp = (width / float(height))
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 1600, 1)
         proj = Matrix()
@@ -441,12 +450,13 @@ class Canvas3D(FloatLayout):
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
         # self.perspective_value += 0.04
-        #self.picking_fbo.texture.save("debug.png")
+        # self.picking_fbo.texture.save("debug.png")
         #self.fbo.texture.save("debug_shadows.png")
 
     def update_glsl(self, *largs):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
+
         asp = width / float(height)
         proj = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
         proj = Matrix()
@@ -533,20 +543,30 @@ class Canvas3D(FloatLayout):
         return z
 
     def get_fixed_points(self, x, y, move=False):
+        # _size = EventLoop.window.system_size
         _size = Window.size
-        _size = EventLoop.window.system_size
+        _size = self.size
         if move:
             _x = x / _size[0]
             _y = y / _size[1]
             return _x * self.MPICKING_BUFFER_SIZE[0], _y * self.MPICKING_BUFFER_SIZE[1]
 
-        _x = x / _size[0]
-        _y = y / _size[1]
+        #_x = x / _size[0]
+        #_y = y / _size[1]
+        pos = self.parent.pos
+        if x < pos[0] or x > pos[0]+_size[0] or y < pos[1] or y > pos[1]+_size[1]:
+            return -1, -1
+
+        _x = (x-pos[0]) / _size[0]
+        _y = (y-pos[1]) / _size[1]
+
         return _x * self.MPICKING_BUFFER_SIZE[0], _y * self.MPICKING_BUFFER_SIZE[1]
 
     def on_touch_down(self, touch):
         # transform the touch coordinate to local space
         x, y = self.get_fixed_points(touch.x, touch.y)
+        if x == -1:
+            return False
         pc = self.get_pixel_color(x, y)
         if not pc:
             return False
@@ -560,9 +580,10 @@ class Canvas3D(FloatLayout):
         t_touch = touch
         t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
         t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
+
         self.last_touch_pos = [t_touch.x, t_touch.y,
-                               float(t_touch.x) / float(EventLoop.window.system_size[0]),
-                               float(t_touch.x) / float(EventLoop.window.system_size[1])]
+                               float(t_touch.x) / float(self.size[0]),
+                               float(t_touch.x) / float(self.size[1])]
         t_touch.pos = (t_touch.x, t_touch.y)
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
@@ -570,7 +591,8 @@ class Canvas3D(FloatLayout):
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
                 touch.ud["pick_value"] = float_str
-                ret = self.fbo_list[float_str].on_touch_down(t_touch)
+                #ret = self.fbo_list[float_str].on_touch_down(t_touch)
+                ret = self.fbo_list[float_str].dispatch("on_touch_down", t_touch)
                 return True
                 #return ret
         else:
@@ -579,6 +601,9 @@ class Canvas3D(FloatLayout):
 
     def on_touch_move(self, touch):
         x, y = self.get_fixed_points(touch.x, touch.y)
+        if x == -1:
+            return False
+
         pc = self.get_pixel_color(x, y)
         if not pc:
             return False
@@ -611,6 +636,9 @@ class Canvas3D(FloatLayout):
         t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
         t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
 
+        t_touch.sx = float(touch.x) / float(self.size[0])
+        t_touch.sy = float(touch.y) / float(self.size[1])
+
         self.last_touch_pos = [t_touch.x, t_touch.y, t_touch.sx, t_touch.sy]
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
@@ -618,6 +646,7 @@ class Canvas3D(FloatLayout):
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
                 ret = self.fbo_list[float_str].dispatch("on_touch_move", t_touch)
+                #ret = self.fbo_list[float_str].on_touch_move(t_touch)
                 return True
                 #return ret
         else:
@@ -627,6 +656,9 @@ class Canvas3D(FloatLayout):
 
     def on_touch_up(self, touch):
         x, y = self.get_fixed_points(touch.x, touch.y)
+        if x == -1:
+            return False
+
         pc = self.get_pixel_color(x, y)
         if not pc:
             return False
@@ -646,9 +678,10 @@ class Canvas3D(FloatLayout):
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
-                t_touch.sx = float(touch.x) / float(EventLoop.window.system_size[0])
-                t_touch.sy = float(touch.y) / float(EventLoop.window.system_size[1])
-                ret = self.fbo_list[float_str].on_touch_up(t_touch)
+                t_touch.sx = float(touch.x) / float(self.size[0])
+                t_touch.sy = float(touch.y) / float(self.size[1])
+                #ret = self.fbo_list[float_str].on_touch_up(t_touch)
+                #ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
                 return True
                 #return ret
                 # ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)

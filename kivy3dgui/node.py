@@ -199,7 +199,7 @@ class Node(Widget):
 
         self.has_gui = False
         self.fbo_widget = FboFloatLayout(size=canvas3d.PICKING_BUFFER_SIZE, size_hint=(None, None),
-                                         pos_hint={"x": 0.0, "y": 0.0}, clear_color=(0, 0, 0, 1.0))
+                                         clear_color=(0, 0, 0, 1.0))
 
         super(Node, self).__init__(**kwargs)
 
