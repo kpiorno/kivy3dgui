@@ -533,7 +533,6 @@ class Canvas3D(FloatLayout):
         if self.shadow:
             self.update_fbo(largs[0])
             # label.text = str(Clock.get_rfps())
-        print(Clock.get_rfps())
 
         if self.parent.parent is None:
             # del self.parent
