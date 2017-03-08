@@ -49,7 +49,7 @@ Builder.load_string('''
 <EffectWidget>:
     canvas:
         Color:
-            rgba: 1, 1, 1, 1
+            rgba: 1, 1, 1, 0
         Rectangle:
             texture: self.texture
             pos: self.pos
@@ -67,6 +67,8 @@ varying vec2 tex_coord0;
 
 /* uniform texture samplers */
 uniform sampler2D texture0;
+uniform sampler2D texture1;
+uniform sampler2D texture3;
 uniform sampler2D texture4;
 uniform sampler2D texture5;
 '''
@@ -343,7 +345,9 @@ vec4 effect( vec4 color, sampler2D texture, vec2 tex_coords, vec2 coords)
 effect_fxaa = '''
 vec4 effect( vec4 color, sampler2D buf0, vec2 texCoords, vec2 coords)
 {
-   if (texture2D(texture4, texCoords).x <= 0.50)
+    return vec4(texture2D(texture0, texCoords));
+    return vec4(texture2D(texture3, texCoords).g , 0, 0, 1.0);
+    if (texture2D(texture4, texCoords).x <= 0.50)
        return color;
 
     vec2 frameBufSize = resolution;
@@ -611,9 +615,11 @@ class EffectWidget(FloatLayout):
         EventLoop.ensure_window()
         self.mask_effect = kwargs.get("mask_effect", None)
         self.motion_effect = kwargs.get("motion_effect", None)
+        self.fbo_canvas = kwargs.get("motion_effect", None)
 
         self.canvas = RenderContext(use_parent_projection=True,
-                                    use_parent_modelview=True)
+                                    use_parent_modelview=True,
+                                    with_depthbuffer=True)
 
         self.size = C_SIZE
         with self.canvas:
@@ -625,11 +631,13 @@ class EffectWidget(FloatLayout):
             #Rectangle(size=(800, 600))
             PushMatrix()
             self.fbo_translation = Translate(-self.x, -self.y, 0)
+            BindTexture(texture=self.fbo_canvas.texture, index=1)
             BindTexture(texture=self.mask_effect.texture, index=4)
             BindTexture(texture=self.motion_effect.texture, index=5)
 
         with self.fbo:
             Color(0, 0, 0)
+            BindTexture(texture=self.fbo_canvas.texture, index=1)
             BindTexture(texture=self.mask_effect.texture, index=4)
             BindTexture(texture=self.motion_effect.texture, index=5)
             self.fbo_rectangle = Rectangle(size=C_SIZE)
@@ -680,11 +688,13 @@ class EffectWidget(FloatLayout):
         self.canvas['resolution'] = resolution
         self.canvas['texture4'] = 4
         self.canvas['texture5'] = 5
+        self.canvas['texture1'] = 1
         for fbo in self.fbo_list:
             fbo['time'] = time
             fbo['resolution'] = resolution
             fbo['texture4'] = 4
             fbo['texture5'] = 5
+            fbo['texture1'] = 1
 
 
     def on_effects(self, *args):

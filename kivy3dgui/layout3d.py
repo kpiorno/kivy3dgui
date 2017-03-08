@@ -1,6 +1,6 @@
 """
 The MIT License (MIT)
-Copyright (c) 2015 Karel Piorno Charchabal
+Copyright (c) 2015-2017 Karel Piorno Charchabal
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -26,12 +26,55 @@ from kivy3dgui.canvas3d import Canvas3D
 from kivy3dgui import effectwidget
 from kivy3dgui.effectwidget import BlurEffectWidget
 from kivy3dgui.node import Node
-from kivy.properties import BooleanProperty, ListProperty, ObjectProperty, NumericProperty
+from kivy.properties import BooleanProperty, ListProperty, ObjectProperty, NumericProperty, StringProperty
 from kivy.graphics import *
 from kivy.core.window import Window
+from kivy.uix.effectwidget import *
 
 # from kivy.graphics.texture import Texture
+class EffectBloom(EffectBase):
+    glsl = StringProperty("""
+vec4 effect( vec4 color, sampler2D bgl_RenderedTexture, vec2 texcoord, vec2 coords)
+{
+   //if (texture2D(texture4, texcoord).x <= 0.50)
+   //    return color;
 
+   vec4 sum = vec4(0);
+   vec4 return_color;
+   //vec2 texcoord = vec2(gl_TexCoord[0]);
+   int j;
+   int i;
+   //float glow_threshold = 0.25;
+   float glow_threshold = 0.15;
+   //float glow_threshold = time/10.0;
+   //float r_color = texture2D(texture4, texcoord).x;
+
+   for( i= -4 ;i < 4; i++)
+   {
+        for (j = -3; j < 3; j++)
+        {
+            sum += texture2D(bgl_RenderedTexture, texcoord + vec2(j, i)*0.004) * glow_threshold;
+        }
+   }
+       if (texture2D(bgl_RenderedTexture, texcoord).r < 0.3)
+    {
+       return_color = sum*sum*0.012 + texture2D(bgl_RenderedTexture, texcoord);
+    }
+    else
+    {
+        if (texture2D(bgl_RenderedTexture, texcoord).r < 0.5)
+        {
+            return_color = sum*sum*0.009 + texture2D(bgl_RenderedTexture, texcoord);
+        }
+        else
+        {
+            return_color = sum*sum*0.0075 + texture2D(bgl_RenderedTexture, texcoord);
+        }
+    }
+    //return_color.a = 1.0;
+    return return_color;
+}
+    """)
 
 class Layout3D(FloatLayout):
     canvas3d = ObjectProperty(None, allownone=True)
@@ -56,6 +99,30 @@ class Layout3D(FloatLayout):
 
     look_at = ListProperty([0, 0, 10, 0, 0, 0, 0, 1, 0])
     '''_look_at
+    '''
+
+    ambient_light = ListProperty([0, 0, 0, 0])
+    '''ambient_light
+    '''
+
+    light_intensity = NumericProperty(0.0)
+    '''ambient_light
+    '''
+
+    light_position = ListProperty([-24.5, 120, 95])
+    '''light_position
+    '''
+
+    light_orientation = ListProperty([0, 0, 0])
+    '''light_position
+    '''
+
+    light_0 = ListProperty([1, 1, 1])
+    '''light_0
+    '''
+
+    light_1 = ListProperty([1, 1, 1])
+    '''light_1
     '''
 
     _id_stack = ListProperty([])
@@ -91,9 +158,17 @@ class Layout3D(FloatLayout):
         self.bind(shadow_target=self.canvas3d.setter('_shadow_target'))
         self.bind(picking_scale=self.canvas3d.setter('picking_scale'))
         self.bind(canvas_size=self.canvas3d.setter('canvas_size'))
+        self.bind(ambient_light=self.canvas3d.setter('ambient_light'))
+        self.bind(light_intensity=self.canvas3d.setter('light_intensity'))
+        self.bind(light_position=self.canvas3d.setter('light_position'))
+        self.bind(light_orientation=self.canvas3d.setter('light_orientation'))
+        self.bind(light_0=self.canvas3d.setter('light_0'))
+        self.bind(light_1=self.canvas3d.setter('light_1'))
+
 
         self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
-                                              motion_effect=self.canvas3d.motion_blur_fbo)
+                                              motion_effect=self.canvas3d.motion_blur_fbo,
+                                              fbo_canvas=self.canvas3d.canvas)
 
         if self._init_request[0]:
             self.post_processing = not self._init_request[1]
@@ -152,9 +227,24 @@ class Layout3D(FloatLayout):
         for children in self.effect_widget.children[:]:
             self.effect_widget.remove_widget(children)
         if value:
-            self.effect_widget.add_widget(self.canvas3d)
-            self.effect_widget.effect_mask = self.canvas3d.picking_fbo
-            self.add_widget(self.effect_widget, 100000)
+            self.ew = EffectWidget()
+            self.ew.add_widget(self.canvas3d)
+            self.ew.effects = [FXAAEffect()]
+            self.ew.size = (1366, 768)
+
+            effect = Image(size_hint=(1.0, 1.0),
+                      allow_stretch=True,
+                      keep_ratio=False)
+            effect.texture = self.canvas3d.canvas.texture
+            self.ew.add_widget(effect)
+            self.add_widget(self.ew, 100000)
+            self.remove_widget(self.render_texture)
+           
+
+            # self.effect_widget.add_widget(self.canvas3d)
+            # self.effect_widget.effect_mask = self.canvas3d.picking_fbo
+            # self.add_widget(self.effect_widget)
+
         else:
             self.add_widget(self.canvas3d, 100000)
 
