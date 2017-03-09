@@ -243,7 +243,7 @@ void main (void){
         float spec_result = SpecularFactor+SpecularFactor2+SpecularFactor3+SpecularFactor4;
         SpecularColor = vec4(specular_intensity * spec_result,
                              specular_intensity * spec_result,
-                             specular_intensity * spec_result, 1.0f);
+                             specular_intensity * spec_result, 1.0);
     //}
 
 
