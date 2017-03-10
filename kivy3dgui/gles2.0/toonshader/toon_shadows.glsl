@@ -84,7 +84,7 @@ void main (void) {
 	vec4 e_pos = projection_mat * camera * pos;
 	tex_coord0 = v_tc0;
 	ShadowCoord  = depthBiasMVP*depthMVP * pos;
-	t_tangent = (modelview_mat * normal_mat * vec4(tangent, 1.0)).xyz;
+	t_tangent = (projection_mat * camera * vec4(tangent, 1.0)).xyz;
 
 	normal_mat_frag = normal_mat;
 	modelview_mat_frag = modelview_mat;
@@ -230,16 +230,16 @@ void main (void){
     float SpecularFactor4 = dot(VertexToEye, LightReflect4);
 
     //if (SpecularFactor > 0.0) {
+  
         SpecularFactor = pow(SpecularFactor, specular_power);
         SpecularFactor2 = pow(SpecularFactor2, specular_power);
         SpecularFactor3 = pow(SpecularFactor3, specular_power);
         SpecularFactor4 = pow(SpecularFactor4, specular_power);
 
-        if (SpecularFactor < 0.0) SpecularFactor = 0.0;
+        if (SpecularFactor  < 0.0)  SpecularFactor = 0.0;
         if (SpecularFactor2 < 0.0) SpecularFactor2 = 0.0;
         if (SpecularFactor3 < 0.0) SpecularFactor3 = 0.0;
         if (SpecularFactor4 < 0.0) SpecularFactor4 = 0.0;
-
         float spec_result = SpecularFactor+SpecularFactor2+SpecularFactor3+SpecularFactor4;
         SpecularColor = vec4(specular_intensity * spec_result,
                              specular_intensity * spec_result,

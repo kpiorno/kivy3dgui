@@ -113,15 +113,14 @@ class Layout3D(FloatLayout):
     '''light_position
     '''
 
-    light_orientation = ListProperty([0, 0, 0])
+    light_orientation = ListProperty([0.01, 0.01, 0.01])
     '''light_position
     '''
-
-    light_0 = ListProperty([1, 1, 1])
+    light_0 = ListProperty([0.01, 0.01, 0.01])
     '''light_0
     '''
 
-    light_1 = ListProperty([1, 1, 1])
+    light_1 = ListProperty([0.01, 0.01, 0.01])
     '''light_1
     '''
 
