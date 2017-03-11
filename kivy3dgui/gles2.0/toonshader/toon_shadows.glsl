@@ -220,21 +220,23 @@ void main (void){
     vec4 SpecularColor = vec4(0, 0, 0, 0);
     //light_0_frag = light_orientation_frag;
     vec3 VertexToEye = normalize(eye_position_frag - vertex_pos);
-    vec3 LightReflect = normalize(reflect(vec3(-normalize(light_position_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect2 = normalize(reflect(vec3(-normalize(light_orientation_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect3 = normalize(reflect(vec3(-normalize(light_0_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect4 = normalize(reflect(vec3(-normalize(light_1_frag.xyz)), v_normal.xyz));
+    vec3 LightReflect = normalize(reflect(vec3(normalize(light_position_frag.xyz)), v_normal.xyz));
+    vec3 LightReflect2 = normalize(reflect(vec3(normalize(light_orientation_frag.xyz)), v_normal.xyz));
+    vec3 LightReflect3 = normalize(reflect(vec3(normalize(light_0_frag.xyz)), v_normal.xyz));
+    vec3 LightReflect4 = normalize(reflect(vec3(normalize(light_1_frag.xyz)), v_normal.xyz));
+
+
     float SpecularFactor = dot(VertexToEye, LightReflect);
     float SpecularFactor2 = dot(VertexToEye, LightReflect2);
     float SpecularFactor3 = dot(VertexToEye, LightReflect3);
     float SpecularFactor4 = dot(VertexToEye, LightReflect4);
-
+        
     //if (SpecularFactor > 0.0) {
   
-        SpecularFactor = pow(SpecularFactor, specular_power);
-        SpecularFactor2 = pow(SpecularFactor2, specular_power);
-        SpecularFactor3 = pow(SpecularFactor3, specular_power);
-        SpecularFactor4 = pow(SpecularFactor4, specular_power);
+        SpecularFactor = SpecularFactor > 0.0 ? pow(SpecularFactor, specular_power) : 0.0;
+        SpecularFactor2 = SpecularFactor2 > 0.0 ? pow(SpecularFactor2, specular_power) : 0.0;
+        SpecularFactor3 = SpecularFactor3 > 0.0 ? pow(SpecularFactor3, specular_power) : 0.0;
+        SpecularFactor4 = SpecularFactor4 > 0.0 ? pow(SpecularFactor4, specular_power) : 0.0;
 
         if (SpecularFactor  < 0.0)  SpecularFactor = 0.0;
         if (SpecularFactor2 < 0.0) SpecularFactor2 = 0.0;
