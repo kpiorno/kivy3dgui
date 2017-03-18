@@ -185,6 +185,7 @@ class Node(Widget):
     _instruction_group = ObjectProperty(None, allownone=True)
     specular_intensity = NumericProperty(0.0)
     specular_power = NumericProperty(0.0)
+    min_light_intensity = NumericProperty(0.0)
 
     alpha = NumericProperty(1.0)
     light_intensity = [1.0, 1.0, 1.0, 1.0]
@@ -233,7 +234,7 @@ class Node(Widget):
         self.has_gui = False
         self.fbo_widget = FboFloatLayout(size=(800, 600), size_hint=(None, None),
                                          clear_color=(0, 0, 0, 1.0))
-        self.fbo_widget.texture_size = self.texture_size
+        #self.fbo_widget.texture_size = self.texture_size
 
         super(Node, self).__init__(**kwargs)
 
@@ -305,13 +306,17 @@ class Node(Widget):
             for obj in self.objs:
                 if self.texture_size[0] == -1:
                     self.fbo_widget.size = canvas3d.PICKING_BUFFER_SIZE
+                    #self.fbo_widget.size = (512, 512)
                 else:
                     self.fbo_widget.size = self.texture_size
+                    #self.fbo_widget.size = (512, 512)
 
                 if self.texture_size[0] == -1:
                     self.fbo_widget.fbo.size = canvas3d.PICKING_BUFFER_SIZE
+                    #self.fbo_widget.fbo.size  = (512, 512)
                 else:
                     self.fbo_widget.fbo.size = self.texture_size
+                    #self.fbo_widget.fbo.size = (512, 512)
                 obj.texture = self.fbo_widget.fbo.texture
                 with self.fbo_widget.fbo:
                     ClearColor(1, 1, 1, 1)
@@ -329,7 +334,8 @@ class Node(Widget):
                                 alpha=(float(self.alpha)),
                                 normal_map_enabled=(float(1)),
                                 specular_intensity=(float(self.specular_intensity)),
-                                specular_power=(float(self.specular_power)))
+                                specular_power=(float(self.specular_power)),
+                                min_light_intensity=(float(self.min_light_intensity)))
 
 
             self._instruction_group.remove(self.state)
@@ -353,7 +359,8 @@ class Node(Widget):
                                      alpha=(float(self.alpha)),
                                      normal_map_enabled=(float(normal_map_value)),
                                      specular_intensity = (float(self.specular_intensity)),
-                                     specular_power = (float(self.specular_power)))
+                                     specular_power = (float(self.specular_power)),
+                                     min_light_intensity=(float(self.min_light_intensity)))
 
 
             self._instruction_group = InstructionGroup()
@@ -432,14 +439,14 @@ class Node(Widget):
                             t1xy = [res[l - 13 * 2 + 6], res[l - 13 * 2 + 7]]
                             t2xy = [res[l - 13 + 6], res[l - 13 + 7]]
 
-                            edge1 = min_vector(v1, v0);
-                            edge2 = min_vector(v2, v0);
+                            edge1 = min_vector(v1, v0)
+                            edge2 = min_vector(v2, v0)
 
-                            delta_u1 = v1[0] - v0[0]
-                            delta_v1 = v1[1] - v0[1]
+                            delta_u1 = t1xy[0] - t0xy[0]
+                            delta_v1 = t1xy[1] - t0xy[1]
 
-                            delta_u2 = v2[0] - v0[0]
-                            delta_v2 = v2[1] - v0[1]
+                            delta_u2 = t2xy[0] - t0xy[0]
+                            delta_v2 = t2xy[1] - t0xy[1]
 
                             d = (delta_u1 * delta_v2 - delta_u2 * delta_v1)
                             if d == 0:
@@ -449,7 +456,6 @@ class Node(Widget):
                             tangent_x = f * (delta_v2 * edge1[0] - delta_v1 * edge2[0])
                             tangent_y = f * (delta_v2 * edge1[1] - delta_v1 * edge2[1])
                             tangent_z = f * (delta_v2 * edge1[2] - delta_v1 * edge2[2])
-                            # tangent = [tangent_x, tangent_y, tangent_z]
 
                             for _i in range(1, 4):
                                 res[l - 13 * _i + 8] += tangent_x
@@ -467,7 +473,6 @@ class Node(Widget):
                         res[i - 12 + 10] = n_vec[2]
 
                 m.vertices = res
-                # print(res)
                 _vertices = m.vertices
                 _indices = m.indices
                 if self.init != 3:

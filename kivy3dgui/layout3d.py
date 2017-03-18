@@ -185,6 +185,9 @@ class Layout3D(FloatLayout):
                                     keep_ratio=False)
         self.add_widget(self.render_texture, 100000)
         self.render_texture.texture = self.canvas3d.canvas.texture
+        self.render_texture.texture.mag_filter = 'linear'
+        self.render_texture.texture.min_filter = 'linear'
+
         self.bind(pos=self.render_texture.setter('pos'))
         self.bind(size=self.render_texture.setter('size'))
 
@@ -238,7 +241,15 @@ class Layout3D(FloatLayout):
             self.ew.add_widget(effect)
             self.add_widget(self.ew, 100000)
             self.remove_widget(self.render_texture)
-           
+
+            effect.texture.mag_filter = 'linear'
+            effect.texture.min_filter = 'linear'
+
+            self.ew.texture.mag_filter = 'linear'
+            self.ew.texture.min_filter = 'linear'
+
+
+
 
             # self.effect_widget.add_widget(self.canvas3d)
             # self.effect_widget.effect_mask = self.canvas3d.picking_fbo

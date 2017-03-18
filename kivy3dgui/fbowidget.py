@@ -53,10 +53,12 @@ class FboFloatLayout(FloatLayout):
         self.canvas = Canvas()
         with self.canvas.before:
             Callback(self._set_blend_func)
-
+        #self.size
         self.fbo_texture = Texture.create(size=self.size,
-                                                  colorfmt='rgba',)
-        self.fbo_texture.mag_filter='nearest'
+                                          colorfmt='rgba')
+
+        self.fbo_texture.mag_filter = 'linear'
+        self.fbo_texture.min_filter = 'linear'
 
         with self.canvas:
             #self.cbs = Callback(self.prepare_canvas)
@@ -95,18 +97,13 @@ class FboFloatLayout(FloatLayout):
             glBlendFunc(GL_ONE,
                         GL_ZERO)
         else:
-
-        #glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA)
-            #glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE)
-            #glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
             glBlendFunc(GL_SRC_ALPHA,
                     GL_ONE_MINUS_SRC_ALPHA)
 
 
-        # draw the buffer, not the whole freakin canvas
         glDisable(GL_CULL_FACE)
         self.fbo.draw()
-        # unclobber the buffer
+
         glBlendFunc(GL_SRC_ALPHA,
                     GL_ONE_MINUS_SRC_ALPHA)
 

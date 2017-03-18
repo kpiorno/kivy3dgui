@@ -169,10 +169,14 @@ class Canvas3D(FloatLayout):
         self.fbo_list = {}
         self.co = self.canvas
         #self.canvas = RenderContext(compute_normal_mat=False)
+
         self.canvas = Fbo(size=self.canvas_size,
                        with_depthbuffer=True,
                        compute_normal_mat=True,
                        clear_color=(1.0, 1.0, 1.0, 0.0))
+
+        self.canvas.texture.mag_filter = 'linear'
+        self.canvas.texture.min_filter = 'linear'
 
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
@@ -362,6 +366,8 @@ class Canvas3D(FloatLayout):
         self._instruction_motion_fbo.add(Callback(self.setup_gl_context_motion_blur))
 
     def setup_gl_context(self, *args):
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glEnable(GL_BLEND)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)

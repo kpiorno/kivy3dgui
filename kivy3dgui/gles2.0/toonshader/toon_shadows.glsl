@@ -23,6 +23,7 @@ uniform mat4 matrix_view;
 uniform vec2 val_sin;
 uniform mat4 depthMVP;
 uniform float enabled_shadow;
+uniform float min_light_intensity;
 uniform mat4 normal_mat;
 uniform vec4 ambient_light;
 uniform vec4 light_intensity;
@@ -39,6 +40,7 @@ uniform float specular_power;
 
 varying mat4 modelview_mat_frag;
 varying vec3 eye_position_frag;
+varying vec3 world_vertex_pos;
 varying mat4 normal_mat_frag;
 varying vec4 normal_vec;
 varying vec3 vertex_pos;
@@ -84,14 +86,17 @@ void main (void) {
 	vec4 e_pos = projection_mat * camera * pos;
 	tex_coord0 = v_tc0;
 	ShadowCoord  = depthBiasMVP*depthMVP * pos;
-	t_tangent = (projection_mat * camera * vec4(tangent, 1.0)).xyz;
+	//t_tangent = (projection_mat * camera * vec4(tangent, 1.0)).xyz;
+	t_tangent = (normal_mat * vec4(tangent, 1.0)).xyz;
 
 	normal_mat_frag = normal_mat;
 	modelview_mat_frag = modelview_mat;
-	eye_position_frag = eye_position;
+	eye_position_frag = (vec4(eye_position,1.0)).xyz;
+	//eye_position_frag = ( projection_mat * camera * modelview_mat * vec4(eye_position, 1.0)).xyz;
 	light_position_frag = light_position;
     light_orientation_frag = light_orientation;
     normal_map_enabled_frag = normal_map_enabled;
+    world_vertex_pos = (vec4(v_pos.xyz, 1.0)).xyz;
 
     light_0_frag = light_0;
     light_1_frag = light_1;
@@ -122,6 +127,7 @@ varying mat4 normal_mat_frag;
 
 uniform float alpha;
 uniform float enabled_shadow;
+uniform float min_light_intensity;
 uniform float lighting;
 uniform float flip_coords;
 uniform vec4 light_intensity;
@@ -144,6 +150,7 @@ varying vec3 light_orientation_frag;
 varying vec3 light_0_frag;
 varying vec3 light_1_frag;
 varying float normal_map_enabled_frag;
+varying vec3 world_vertex_pos;
 
 uniform vec3 L;
 uniform vec3 N;
@@ -184,7 +191,7 @@ void main (void){
     
     vec4 v_normal = normalize(  normal_mat_frag * normal_vec ) ;
     if (normal_map_enabled_frag == 1.0)
-        v_normal = vec4(calc_bumped_normal(v_normal.xyz, vec2(t_coords.x, 1.0 - t_coords.y)).xyz, 1.0);
+        v_normal = vec4(calc_bumped_normal(v_normal.xyz, vec2(t_coords.x, 1.0 - t_coords.y)).xyz, .0);
 
     float diffuse = max(dot(v_normal.xyz, normalize(light_position_frag)), 0.0);
 
@@ -195,7 +202,7 @@ void main (void){
     else if (intensity > 0.45) color2 = vec4(0.85-reg, 0.85-reg, 0.85-reg, 1.0);
     else                       color2 = vec4(0.8-reg, 0.8-reg, 0.8, 1.0);*/
 
-    if (diffuse < 0.05) diffuse = 0.05;
+    if (diffuse < min_light_intensity) diffuse = min_light_intensity;
 
     float visibility = 1.1;
     for (int i=0;i<4;i++){
@@ -218,19 +225,24 @@ void main (void){
 
     vec4 DiffuseColor = vec4(0, 0, 0, 0);
     vec4 SpecularColor = vec4(0, 0, 0, 0);
-    //light_0_frag = light_orientation_frag;
-    vec3 VertexToEye = normalize(eye_position_frag - vertex_pos);
-    vec3 LightReflect = normalize(reflect(vec3(normalize(light_position_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect2 = normalize(reflect(vec3(normalize(light_orientation_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect3 = normalize(reflect(vec3(normalize(light_0_frag.xyz)), v_normal.xyz));
-    vec3 LightReflect4 = normalize(reflect(vec3(normalize(light_1_frag.xyz)), v_normal.xyz));
 
+    //vec3 eye_position_fragx = vec3(-4, 10, -109.7);
+    vec3 VertexToEye = normalize(eye_position_frag - world_vertex_pos);
+    vec3 LightReflect = normalize(reflect(vec3(normalize(light_position_frag.xyz-world_vertex_pos)), v_normal.xyz));
+
+    /*vec4 v_light = normalize( vec4(light_position_frag, 1.0) - vec4(world_vertex_pos.xyz, 1.0));
+    vec3 LightReflect =  vec3(1.0, 1.0, 1.0) * pow(max(dot(v_light, vec4(v_normal.xyz,1)), 0.0), 0.9);
+    SpecularColor = vec4(LightReflect, 1.0);*/
+
+    vec3 LightReflect2 = normalize(reflect(vec3(normalize(light_orientation_frag.xyz-world_vertex_pos)), v_normal.xyz));
+    vec3 LightReflect3 = normalize(reflect(vec3(normalize(light_0_frag.xyz-world_vertex_pos)), v_normal.xyz));
+    vec3 LightReflect4 = normalize(reflect(vec3(normalize(light_1_frag.xyz-world_vertex_pos)), v_normal.xyz));
 
     float SpecularFactor = dot(VertexToEye, LightReflect);
     float SpecularFactor2 = dot(VertexToEye, LightReflect2);
     float SpecularFactor3 = dot(VertexToEye, LightReflect3);
     float SpecularFactor4 = dot(VertexToEye, LightReflect4);
-        
+    SpecularFactor = 0.01;
     //if (SpecularFactor > 0.0) {
   
         SpecularFactor = SpecularFactor > 0.0 ? pow(SpecularFactor, specular_power) : 0.0;
@@ -242,6 +254,11 @@ void main (void){
         if (SpecularFactor2 < 0.0) SpecularFactor2 = 0.0;
         if (SpecularFactor3 < 0.0) SpecularFactor3 = 0.0;
         if (SpecularFactor4 < 0.0) SpecularFactor4 = 0.0;
+
+        if (SpecularFactor2 < 0.0) SpecularFactor2 = 0.0;
+        if (SpecularFactor3 < 0.0) SpecularFactor3 = 0.0;
+        if (SpecularFactor4 < 0.0) SpecularFactor4 = 0.0;
+
         float spec_result = SpecularFactor+SpecularFactor2+SpecularFactor3+SpecularFactor4;
         SpecularColor = vec4(specular_intensity * spec_result,
                              specular_intensity * spec_result,
