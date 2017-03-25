@@ -138,6 +138,13 @@ class Layout3D(FloatLayout):
 
     picking_scale = NumericProperty(1.0)
 
+    render_texture = ObjectProperty(None, allownone=True)
+    '''render_texture
+    '''
+
+    effect_widget = ObjectProperty(None, allownone=True)
+    '''effect_widget
+    '''
     def __init__(self, **kwargs):
 
         self.canvas_size = kwargs.get("canvas_size", Window.size)
@@ -165,10 +172,18 @@ class Layout3D(FloatLayout):
         self.bind(light_1=self.canvas3d.setter('light_1'))
 
 
-        self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
-                                              motion_effect=self.canvas3d.motion_blur_fbo,
-                                              fbo_canvas=self.canvas3d.canvas)
+        #self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,
+        #                                      motion_effect=self.canvas3d.motion_blur_fbo,
+        #                                      fbo_canvas=self.canvas3d.canvas)
 
+        self.render_texture = Image(size_hint=(1.0, 1.0),
+                                    allow_stretch=True,
+                                    keep_ratio=False)
+        self.add_widget(self.render_texture, 100000)
+        self.render_texture.texture = self.canvas3d.canvas.texture
+        self.render_texture.texture.mag_filter = 'linear'
+        self.render_texture.texture.min_filter = 'linear'
+                                              
         if self._init_request[0]:
             self.post_processing = not self._init_request[1]
             self.post_processing = self._init_request[1]
@@ -180,13 +195,6 @@ class Layout3D(FloatLayout):
             self.add_widget(label_debug)
         except Exception as w:
             pass
-        self.render_texture = Image(size_hint=(1.0, 1.0),
-                                    allow_stretch=True,
-                                    keep_ratio=False)
-        self.add_widget(self.render_texture, 100000)
-        self.render_texture.texture = self.canvas3d.canvas.texture
-        self.render_texture.texture.mag_filter = 'linear'
-        self.render_texture.texture.min_filter = 'linear'
 
         self.bind(pos=self.render_texture.setter('pos'))
         self.bind(size=self.render_texture.setter('size'))
@@ -226,38 +234,40 @@ class Layout3D(FloatLayout):
             if isinstance(children, Canvas3D) or isinstance(children, BlurEffectWidget):
                 self.remove_widget(children)
 
-        for children in self.effect_widget.children[:]:
-            self.effect_widget.remove_widget(children)
+        #for children in self.effect_widget.children[:]:
+        #    self.effect_widget.remove_widget(children)
         if value:
-            self.ew = EffectWidget()
-            self.ew.add_widget(self.canvas3d)
-            self.ew.effects = [FXAAEffect()]
-            self.ew.size = (1366, 768)
+            self.effect_widget = EffectWidget()
+            self.effect_widget.add_widget(self.canvas3d)
+            self.effect_widget.effects = [FXAAEffect()]
+            self.effect_widget.size = (1366, 768)
 
             effect = Image(size_hint=(1.0, 1.0),
                       allow_stretch=True,
                       keep_ratio=False)
             effect.texture = self.canvas3d.canvas.texture
-            self.ew.add_widget(effect)
-            self.add_widget(self.ew, 100000)
+            self.effect_widget.add_widget(effect)
+            self.add_widget(self.effect_widget, 100000)
             self.remove_widget(self.render_texture)
 
             effect.texture.mag_filter = 'linear'
             effect.texture.min_filter = 'linear'
 
-            self.ew.texture.mag_filter = 'linear'
-            self.ew.texture.min_filter = 'linear'
-
-
-
+            self.effect_widget.texture.mag_filter = 'linear'
+            self.effect_widget.texture.min_filter = 'linear'
 
             # self.effect_widget.add_widget(self.canvas3d)
             # self.effect_widget.effect_mask = self.canvas3d.picking_fbo
             # self.add_widget(self.effect_widget)
 
         else:
+            if self.effect_widget:
+                if self.canvas3d in self.effect_widget.children:
+                    self.effect_widget.remove_widget(self.canvas3d)
+                self.remove_widget(self.effect_widget)
+                
             self.add_widget(self.canvas3d, 100000)
-
+            self.add_widget(self.render_texture, 100000)
     def add_widget(self, *largs):
         widget = largs[0]
 
