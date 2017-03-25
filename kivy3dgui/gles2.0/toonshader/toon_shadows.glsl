@@ -190,7 +190,7 @@ void main (void){
     vec4 color2;
     
     vec4 v_normal = normalize(  normal_mat_frag * normal_vec ) ;
-    if (normal_map_enabled_frag == 1.0)
+    if (normal_map_enabled == 1.0)
         v_normal = vec4(calc_bumped_normal(v_normal.xyz, vec2(t_coords.x, 1.0 - t_coords.y)).xyz, .0);
 
     float diffuse = max(dot(v_normal.xyz, normalize(light_position_frag)), 0.0);
