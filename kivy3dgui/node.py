@@ -414,6 +414,9 @@ class Node(Widget):
             _vertices = []
             _indices = []
             if ".obj" in e:
+                filename = resource_find(e)
+                if not filename:
+                    raise IOError("File: '{0}' not found".format(e))
                 m = ObjFile(resource_find(e))
                 m = list(m.objects.values())[0]
                 res = []

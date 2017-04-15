@@ -323,6 +323,10 @@ class Layout3D(FloatLayout):
         else:
             super(Layout3D, self).remove_widget(widget)
 
+    def on_touch_down(self, *args):
+        self.canvas3d.last_widget_str = "NONE"
+        return super(Layout3D, self).on_touch_down(*args)
+  
     def on_touch_up(self, touch):
         ret = False
         for e in self.children:
