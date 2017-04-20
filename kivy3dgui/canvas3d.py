@@ -193,7 +193,8 @@ class Canvas3D(FloatLayout):
         if self.picking:
             self.init_picking()
         self.init_motion_blur()
-        super(Canvas3D, self).__init__(**kwargs)
+        super(Canvas3D, self).__init__(
+            size_hint=kwargs.get('size_hint', (1, 1)))
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
 
