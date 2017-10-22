@@ -1,6 +1,6 @@
 """
 The MIT License (MIT)
-Copyright (c) 2015 Karel Piorno Charchabal
+Copyright (c) 2015-2017 Karel Piorno Charchabal
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -22,7 +22,7 @@ from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import ListProperty, NumericProperty, ListProperty
+from kivy.properties import ListProperty, NumericProperty, ListProperty, StringProperty
 from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
@@ -130,9 +130,35 @@ class Canvas3D(FloatLayout):
     picking_scale = NumericProperty(0)
     '''shadow_offset
     '''
+
+    ambient_light = ListProperty([0, 0, 0, 0])
+    '''ambient_light
+    '''
+
+    light_intensity = NumericProperty(0.0)
+    '''light_intensity
+    '''
+
+    light_position = ListProperty([-24.5, 120, 95])
+    '''light_position
+    '''
+
+    light_orientation = ListProperty([0.01, 0.01, 0.01])
+    '''light_position
+    '''
+    light_0 = ListProperty([0.01, 0.01, 0.01])
+    '''light_0
+    '''
+
+    light_1 = ListProperty([0.01, 0.01, 0.01])
+    '''light_1
+    '''
+
     MPICKING_BUFFER_SIZE = ListProperty([320, 240])
 
     canvas_size = ListProperty([1366, 768])
+
+    last_widget_str = StringProperty("")
 
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
@@ -145,10 +171,14 @@ class Canvas3D(FloatLayout):
         self.fbo_list = {}
         self.co = self.canvas
         #self.canvas = RenderContext(compute_normal_mat=False)
+
         self.canvas = Fbo(size=self.canvas_size,
                        with_depthbuffer=True,
                        compute_normal_mat=True,
                        clear_color=(1.0, 1.0, 1.0, 0.0))
+
+        self.canvas.texture.mag_filter = 'linear'
+        self.canvas.texture.min_filter = 'linear'
 
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
         # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
@@ -339,6 +369,8 @@ class Canvas3D(FloatLayout):
         self._instruction_motion_fbo.add(Callback(self.setup_gl_context_motion_blur))
 
     def setup_gl_context(self, *args):
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glEnable(GL_BLEND)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
@@ -419,7 +451,7 @@ class Canvas3D(FloatLayout):
         self.fbo['projection_mat'] = proj
         self.fbo['depthMVP'] = depthMVP
         self.fbo['diffuse_light'] = (0.0, 1.0, 0.0)
-        self.fbo['ambient_light'] = (0.1, 0.1, 0.1)
+        self.fbo['ambient_light'] = self.ambient_light
         for m_pos in range(len(self.nodes)):
             motion_matrix = Matrix().view_clip(-asp, asp, -1, 1, 1, 600, 1)
             angle = self.nodes[m_pos].rotate[0] * 3.14 / 180
@@ -470,9 +502,22 @@ class Canvas3D(FloatLayout):
         self.canvas['camera'] = matrix_camera
 
         self.canvas['diffuse_light'] = (0.0, 1.0, 0.0)
-        self.canvas['ambient_light'] = (0.1, 0.1, 0.1)
+        self.canvas['ambient_light'] = [v for v in self.ambient_light]
+        self.canvas['light_visibility'] = self.light_intensity
+        self.canvas['eye_position'] = [self.look_at[0], self.look_at[1], self.look_at[2]]
+        self.canvas['light_position'] = [self.light_position[0], self.light_position[1],
+                                         self.light_position[2]]
+
+        self.canvas['light_orientation'] = [self.light_orientation[0], self.light_orientation[1],
+                                            self.light_orientation[2]]
+        self.canvas['light_0'] = [self.light_0[0], self.light_0[1],
+                                            self.light_0[2]]
+        self.canvas['light_1'] = [self.light_1[0], self.light_1[1],
+                                            self.light_1[2]]
+
         if self.shadow:
             self.canvas['texture1'] = 1
+            self.canvas['texture2'] = 2
             self.canvas["enabled_shadow"] = 1.0
         else:
 
@@ -564,6 +609,7 @@ class Canvas3D(FloatLayout):
         return _x * self.MPICKING_BUFFER_SIZE[0], _y * self.MPICKING_BUFFER_SIZE[1]
 
     def on_touch_down(self, touch):
+        self.last_widget_str = "NONE"
         # transform the touch coordinate to local space
         x, y = self.get_fixed_points(touch.x, touch.y)
         if x == -1:
@@ -591,8 +637,17 @@ class Canvas3D(FloatLayout):
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             if float_str in self.fbo_list:
+                self.last_widget_str = float_str
                 touch.ud["pick_value"] = float_str
                 #ret = self.fbo_list[float_str].on_touch_down(t_touch)
+                _size = self.fbo_list[float_str].size
+                t_touch.x = int(pc[1] * _size[0])
+                t_touch.y = int(pc[2] * _size[1])
+
+                self.last_touch_pos = [t_touch.x, t_touch.y,
+                                       float(t_touch.x) / float(self.size[0]),
+                                       float(t_touch.x) / float(self.size[1])]
+                t_touch.pos = (t_touch.x, t_touch.y)
                 ret = self.fbo_list[float_str].dispatch("on_touch_down", t_touch)
                 return True
                 #return ret
@@ -601,6 +656,9 @@ class Canvas3D(FloatLayout):
         return True
 
     def on_touch_move(self, touch):
+        if self.last_widget_str == "NONE":
+           return False
+
         x, y = self.get_fixed_points(touch.x, touch.y)
         if x == -1:
             return False
@@ -616,6 +674,12 @@ class Canvas3D(FloatLayout):
         # fix
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
+            if float_str != self.last_widget_str:
+               touch.x = self.last_touch_pos[0]
+               touch.y = self.last_touch_pos[1]
+               touch.sx = self.last_touch_pos[2]
+               touch.sy = self.last_touch_pos[3]
+
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
             try:
@@ -623,7 +687,8 @@ class Canvas3D(FloatLayout):
                     return
             except:
                 pass
-
+             
+ 
         t_touch = copy.copy(touch)
         t_touch = touch
         t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
@@ -645,7 +710,12 @@ class Canvas3D(FloatLayout):
             float_str = str(round(pc[0], 2))[0:4]
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
-            if float_str in self.fbo_list:
+            if float_str in self.fbo_list and float_str == self.last_widget_str:
+                _size = self.fbo_list[float_str].size
+                t_touch.x = int(pc[1] * _size[0])
+                t_touch.y = int(pc[2] * _size[1])
+                self.last_touch_pos = [t_touch.x, t_touch.y, t_touch.sx, t_touch.sy]
+
                 ret = self.fbo_list[float_str].dispatch("on_touch_move", t_touch)
                 #ret = self.fbo_list[float_str].on_touch_move(t_touch)
                 return True
@@ -656,6 +726,9 @@ class Canvas3D(FloatLayout):
         return True
 
     def on_touch_up(self, touch):
+        if self.last_widget_str == "NONE":
+           return False
+
         x, y = self.get_fixed_points(touch.x, touch.y)
         if x == -1:
             return False
@@ -681,12 +754,12 @@ class Canvas3D(FloatLayout):
             if float_str in self.fbo_list:
                 t_touch.sx = float(touch.x) / float(self.size[0])
                 t_touch.sy = float(touch.y) / float(self.size[1])
+                #t_touch.x = int(pc[1] * 128)
+                #t_touch.y = int(pc[2] * 128)
+
                 #ret = self.fbo_list[float_str].on_touch_up(t_touch)
                 #ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
                 return True
-                #return ret
-                # ret = self.fbo_list[float_str].dispatch("on_touch_up", t_touch)
-                # return ret
         else:
             return False
         return True

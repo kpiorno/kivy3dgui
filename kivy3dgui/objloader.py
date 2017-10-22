@@ -1,3 +1,6 @@
+from kivy.logger import Logger
+
+
 class MeshData(object):
     def __init__(self, **kwargs):
         self.name = kwargs.get("name")
@@ -83,6 +86,7 @@ class ObjFile:
         self._current_object = None
 
         material = None
+
         for line in open(filename, "r"):
             if line.startswith('#'): continue
             if line.startswith('s'): continue
