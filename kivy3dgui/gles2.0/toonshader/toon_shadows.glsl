@@ -34,9 +34,15 @@ uniform vec3 light_position;
 uniform vec3 light_orientation;
 uniform vec3 light_0;
 uniform vec3 light_1;
+
+uniform vec3 mesh_pos;
+
 uniform float specular_intensity;
 uniform float specular_power;
-
+uniform float pitch;
+uniform float yaw;
+uniform float roll;
+uniform int axis_type;
 
 varying mat4 modelview_mat_frag;
 varying vec3 eye_position_frag;
@@ -44,6 +50,8 @@ varying vec3 world_vertex_pos;
 varying mat4 normal_mat_frag;
 varying vec4 normal_vec;
 varying vec3 vertex_pos;
+varying vec4 mv_vertex_pos;
+
 varying vec2 tex_coord0;
 varying vec3 t_tangent;
 varying vec4 ShadowCoord;
@@ -73,17 +81,94 @@ mat4 M = mat4(1.0, 0.0, 0.0, 0.0,
 0.0, 0.0, 1.0, 0.0,
 0.0, 0.0, 0.0, 1.0);
 
+vec4 quat_from_axis_angle(vec3 axis, float angle)
+{ 
+  vec4 qr;
+  float half_angle = (angle * 0.5) * 3.14159 / 180.0;
+  qr.x = axis.x * sin(half_angle);
+  qr.y = axis.y * sin(half_angle);
+  qr.z = axis.z * sin(half_angle);
+  qr.w = cos(half_angle);
+  return qr;
+}
+
+vec4 quat_conj(vec4 q)
+{ 
+  return vec4(-q.x, -q.y, -q.z, q.w); 
+}
+  
+vec4 quat_mult(vec4 q1, vec4 q2)
+{ 
+  vec4 qr;
+  qr.x = (q1.w * q2.x) + (q1.x * q2.w) + (q1.y * q2.z) - (q1.z * q2.y);
+  qr.y = (q1.w * q2.y) - (q1.x * q2.z) + (q1.y * q2.w) + (q1.z * q2.x);
+  qr.z = (q1.w * q2.z) + (q1.x * q2.y) - (q1.y * q2.x) + (q1.z * q2.w);
+  qr.w = (q1.w * q2.w) - (q1.x * q2.x) - (q1.y * q2.y) - (q1.z * q2.z);
+  return qr;
+}
+
+vec4 quat_sum(vec4 q1, vec4 q2)
+{ 
+  vec4 qr;
+  qr.x = q1.x - q2.x;
+  qr.y = q1.y - q2.y;
+  qr.z = q1.z - q2.z;
+  qr.w = q1.w - q2.w;
+  return qr;
+}
+
+/*vec3 rotate_vertex_position(vec3 position, vec3 axis, float angle)
+{ 
+  vec4 qr = quat_from_axis_angle(axis, angle);
+  vec4 qr_conj = quat_conj(qr);
+  vec4 q_pos = vec4(position.x, position.y, position.z, 0);
+  
+  vec4 q_tmp = quat_mult(qr, q_pos);
+  qr = quat_mult(q_tmp, qr_conj);
+  
+  return vec3(qr.x, qr.y, qr.z);
+}*/
+
+vec3 rotate_vertex_position(vec3 position, vec3 axis, float angle)
+{ 
+  vec4 q = quat_from_axis_angle(axis, angle);
+  vec3 v = position.xyz;
+  return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+vec3 rotate_vertex_position_q(vec3 position, vec4 q)
+{ 
+  vec3 v = position.xyz;
+  return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
 
 void main (void) {
-	normal_vec = vec4(v_normal,0.0);
-	vec4 pos = modelview_mat * vec4(v_pos,1.0);
+	normal_vec = vec4(v_normal,1.0);
+    vec4 pitch_quat = quat_from_axis_angle(vec3(1., 0., 0.), pitch);
+    vec4 yaw_quat = quat_from_axis_angle(vec3(0., 1., 0.), yaw);
+    vec4 roll_quat = quat_from_axis_angle(vec3(0., 0., 1.), roll);
+    
+    vec4 res_quat = vec4(0, 0, 0, 1);
+    res_quat = quat_mult(quat_mult(pitch_quat, yaw_quat), roll_quat);
+
+    //vec4 res_quat = quat_sum(quat_sum(pitch_quat, yaw_quat), roll_quat);
+
+    vec3 P = rotate_vertex_position_q(v_pos, res_quat);
+	vec4 pos = modelview_mat * vec4(v_pos, 1.0);
+    
+    pos = vec4(rotate_vertex_position_q(pos.xyz - mesh_pos, res_quat) + mesh_pos, 1.0) ;
+    //vec4 pos = modelview_mat * vec4(P, 1.0);
 
 	#ifdef __GLSL_CG_DATA_TYPES // Fix clipping for Nvidia and ATI
 	gl_ClipVertex = projection_mat * gl_Vertex;
 	#endif
 
-	lightPosition = modelview_mat * vec4(0.5, 200, 0, 1);
+	lightPosition = modelview_mat * camera* vec4(0.5, 200, 0, 1) ;
+
+    
 	vec4 e_pos = projection_mat * camera * pos;
+    normal_vec =  /*modelview_mat * projection_mat * */ vec4(rotate_vertex_position_q(normal_vec.xyz, res_quat), 1.0);
+    
 	tex_coord0 = v_tc0;
 	ShadowCoord  = depthBiasMVP*depthMVP * pos;
 	//t_tangent = (projection_mat * camera * vec4(tangent, 1.0)).xyz;
@@ -91,19 +176,22 @@ void main (void) {
 
 	normal_mat_frag = normal_mat;
 	modelview_mat_frag = modelview_mat;
-	eye_position_frag = (vec4(eye_position,1.0)).xyz;
-	//eye_position_frag = ( projection_mat * camera * modelview_mat * vec4(eye_position, 1.0)).xyz;
+	eye_position_frag = (projection_mat * modelview_mat * camera * vec4(eye_position,1.0)).xyz;
+
 	light_position_frag = light_position;
     light_orientation_frag = light_orientation;
     normal_map_enabled_frag = normal_map_enabled;
-    world_vertex_pos = (vec4(v_pos.xyz, 1.0)).xyz;
-
+    //world_vertex_pos = (vec4(v_pos.xyz, 1.0)).xyz;
+    //world_vertex_pos = (projection_mat * modelview_mat * camera * vec4(P, 1.0)).xyz;
+    world_vertex_pos = e_pos.xyz;
     light_0_frag = light_0;
     light_1_frag = light_1;
 
 
+	//gl_Position = e_pos;
 	gl_Position = e_pos;
-	vertex_pos = e_pos.xyz;
+    vertex_pos = e_pos.xyz;
+    mv_vertex_pos =  modelview_mat * vec4(P, 1.0);
 }
 
 
@@ -117,6 +205,8 @@ uniform vec2  cond;
 
 varying vec4 normal_vec;
 varying vec3 vertex_pos;
+varying vec4 mv_vertex_pos;
+
 varying vec2 tex_coord0;
 varying vec3 t_tangent;
 varying vec3 eye_position_frag;
@@ -126,6 +216,7 @@ varying mat4 modelview_mat_frag;
 varying mat4 normal_mat_frag;
 
 uniform float alpha;
+uniform float shadows_bias;
 uniform float enabled_shadow;
 uniform float min_light_intensity;
 uniform float lighting;
@@ -177,7 +268,7 @@ vec3 calc_bumped_normal(vec3 normal, vec2 text_coords)
 }
 
 void main (void){
-        poissonDisk[0] = vec2( -0.94201624, -0.39906216 );
+    poissonDisk[0] = vec2( -0.94201624, -0.39906216 );
     poissonDisk[1] = vec2( 0.94558609, -0.76890725 );
     poissonDisk[2] = vec2( -0.094184101, -0.92938870 );
     poissonDisk[3] = vec2( 0.34495938, 0.29387760 );
@@ -189,27 +280,34 @@ void main (void){
     color1 = texture2D( texture0, t_coords );
     vec4 color2;
     
-    vec4 v_normal = normalize(  normal_mat_frag * normal_vec ) ;
+    vec4 v_normal = normalize(  normal_mat_frag *  normal_vec ) + vec4(0.3, 0.3, 0.3, 1.0);
+    //vec3 light_position_f = normalize(vec4(10, 100, 100, 1) - mv_vertex_pos).xyz;
+    vec3 light_position_f = light_position_frag - mv_vertex_pos.xyz;
+
+    
     if (normal_map_enabled == 1.0)
         v_normal = vec4(calc_bumped_normal(v_normal.xyz, vec2(t_coords.x, 1.0 - t_coords.y)).xyz, .0);
 
-    float diffuse = max(dot(v_normal.xyz, normalize(light_position_frag)), 0.0);
+    float diffuse = max(dot(v_normal.xyz, normalize(light_position_f)), 0.0);
 
-    float reg = -0.3;
-    /*if (intensity > 0.75)      color2 = vec4(1.0-reg, 1.0-reg, 1.0-reg, 1.0);
-    else if (intensity > 0.65) color2 = vec4(0.95-reg, 0.95-reg, 0.95-reg, 1.0);
-    else if (intensity > 0.50) color2 = vec4(0.9-reg, 0.9-reg, 0.9-reg, 1.0);
-    else if (intensity > 0.45) color2 = vec4(0.85-reg, 0.85-reg, 0.85-reg, 1.0);
-    else                       color2 = vec4(0.8-reg, 0.8-reg, 0.8, 1.0);*/
 
     if (diffuse < min_light_intensity) diffuse = min_light_intensity;
+    
+    /*float cosTheta = dot((normal_mat_frag *  normal_vec).xyz, normalize(vec3(0.01, 1., 0.01)));
+    float bias = 0.005*tan(acos(cosTheta)); 
+    bias = clamp(bias, 0.,shadows_bias);*/
 
     float visibility = 1.1;
     for (int i=0;i<4;i++){
-      if ( texture2D( texture1, ShadowCoord.xy + poissonDisk[i]/700.0).z  <  ShadowCoord.z-0.01 ){
-        visibility-=0.1;
+      if ( texture2D( texture1, ShadowCoord.xy + poissonDisk[i]/700.0).z <  ShadowCoord.z-shadows_bias  ){
+            visibility-=0.1;
       }
     }
+    
+    
+/*if ( texture2D( texture1, ShadowCoord.xy).z <  ShadowCoord.z-shadows_bias){
+    visibility = 0.5;
+} */   
 
     if (enabled_shadow == 0.0) visibility = 1.0;
     float res_alpha = 1.0;
@@ -228,9 +326,9 @@ void main (void){
 
     //vec3 eye_position_fragx = vec3(-4, 10, -109.7);
     vec3 VertexToEye = normalize(eye_position_frag - world_vertex_pos);
-    vec3 LightReflect = normalize(reflect(vec3(normalize(light_position_frag.xyz-world_vertex_pos)), v_normal.xyz));
+    vec3 LightReflect = normalize(reflect(vec3(normalize(light_position_f.xyz-world_vertex_pos)), v_normal.xyz));
 
-    /*vec4 v_light = normalize( vec4(light_position_frag, 1.0) - vec4(world_vertex_pos.xyz, 1.0));
+    /*vec4 v_light = normalize( vec4(light_position_f, 1.0) - vec4(world_vertex_pos.xyz, 1.0));
     vec3 LightReflect =  vec3(1.0, 1.0, 1.0) * pow(max(dot(v_light, vec4(v_normal.xyz,1)), 0.0), 0.9);
     SpecularColor = vec4(LightReflect, 1.0);*/
 

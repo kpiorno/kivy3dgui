@@ -9,6 +9,9 @@ from kivy3dgui.objloader import ObjFile
 from kivy.uix.widget import Widget
 from kivy.properties import (BooleanProperty, ListProperty, StringProperty,
                              NumericProperty, ObjectProperty)
+from kivy.graphics.opengl import *
+from kivy.graphics import *
+from kivy.graphics.texture import Texture                             
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
 from kivy3dgui import canvas3d
@@ -172,6 +175,9 @@ def load_ogre(filename):
 class Node(Widget):
     scale = ListProperty([1., 1., 1.])
     rotate = ListProperty([1., 0., 1., 0.])
+    pitch = NumericProperty(0.)
+    yaw = NumericProperty(0.)
+    roll = NumericProperty(0.)
     translate = ListProperty([0.0, 0.0, 0.0])
     effect = BooleanProperty(False)
     receive_shadows = BooleanProperty(True)
@@ -186,8 +192,13 @@ class Node(Widget):
     specular_intensity = NumericProperty(0.0)
     specular_power = NumericProperty(0.0)
     min_light_intensity = NumericProperty(0.0)
+    always_on_top = BooleanProperty(False)
 
     alpha = NumericProperty(1.0)
+    axis_type = NumericProperty(0)
+    
+    shadows_bias = NumericProperty(0.01)
+    
     light_intensity = [1.0, 1.0, 1.0, 1.0]
     old_transformation = [1.0, 0.0, 0.0, 1300.0, True]
     orientation_vector = [1.0, 1.0, 1.0, 1.0]
@@ -216,16 +227,22 @@ class Node(Widget):
 
     def __init__(self, **kwargs):
         self.translate = kwargs.get("translate", (0., 0., 0.))
-        self.rotate = kwargs.get("rotate", (1., 0., 1., 0.))
+        self.rotate = kwargs.get("rotate", (0., 0., 1., 0.))
+        self.pitch = kwargs.get("pitch", 0.)
+        self.yaw = kwargs.get("yaw", 0.)
+        self.roll = kwargs.get("roll", 0.)
         self.scale = kwargs.get("scale", (1., 1., 1.))
         self._objs = kwargs.get("objs", ())
         self._objs = kwargs.get("meshes", ())
         self._anims = kwargs.get("anims", [])
         self.effect = kwargs.get("effect", False)
         self.current_anim_index = kwargs.get("current_anim_index", 0)
+        self.axis_type = kwargs.get("axis_type", 0)
         self.light_intensity = kwargs.get("light_intensity", [1.0, 1.0, 1.0, 1.0])
         self.normal_map = kwargs.get("normal_map", "")
+        self._normal_map = kwargs.get("normal_map", "")
         self.alpha = kwargs.get("alpha", 1.0)
+        self.shadows_bias = kwargs.get("shadows_bias", 0.01)
         self.objs = []
 
         if '__no_builder' in kwargs:
@@ -249,7 +266,7 @@ class Node(Widget):
     def on_alpha_blending(self, widget, value):
         if self.fbo_widget is not None:
             self.fbo_widget.alpha_blending = self.alpha_blending
-
+            
     def on_meshes(self, widget, value):
         if self.init == -1:
             return
@@ -292,6 +309,8 @@ class Node(Widget):
             self._shadow_rotate.set(*value)
             self._picking_rotate.set(*value)
             self._motion_blur_rotate.set(*value)
+            
+            
 
     def add_widget(self, *largs):
         self.has_gui = True
@@ -324,6 +343,7 @@ class Node(Widget):
 
     def on_normal_map(self, widget, value):
         self._normal_map = value
+
         if len(self._normal_map) > 0 and self._instruction_group:
             image = Image(value)
             bind_texture = BindTexture(texture=image.texture, index=2)
@@ -332,6 +352,7 @@ class Node(Widget):
                                 light_intensity=self.light_intensity,
                                 flip_coords=(float(self.flip_coords)),
                                 alpha=(float(self.alpha)),
+                                shadows_bias=(shadows_bias(self.alpha)),
                                 normal_map_enabled=(float(1)),
                                 specular_intensity=(float(self.specular_intensity)),
                                 specular_power=(float(self.specular_power)),
@@ -341,9 +362,44 @@ class Node(Widget):
             self._instruction_group.remove(self.state)
             self._instruction_group.add(bind_texture)
             self._instruction_group.add(state)
+            
+            
+    def before_render(self, *args):
+        if self.always_on_top:
+            m_origin_depth = glGetBooleanv(GL_DEPTH_TEST)
+            m_origin_cull = glGetBooleanv(GL_CULL_FACE);
 
-    def start(self):
+            #setAlphaBlending(True)
+            
+            glEnable (GL_BLEND)
+            glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+            
+
+            glDisable(GL_DEPTH_TEST)
+            glDisable(GL_CULL_FACE)   
+        
+    def after_render(self, *args):
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glEnable(GL_BLEND)
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
+        glEnable(GL_DEPTH_TEST)        
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        
+
+    def update_params(self, *args):
+        self.current_callback(self)
+
+    def update_params_fbo(self, *args):
+        self.current_callback_fbo(self)
+
+    def update_params_picking_fbo(self, *args):
+        self.current_callback_picking_fbo(self)
+        
+    def start(self, current_callback):
         if self.init == 0:
+            self.current_callback = current_callback
             Color(1, 1, 1, 1)
 
             normal_map_value = 0
@@ -351,53 +407,79 @@ class Node(Widget):
                 normal_map_value = 1
                 image = Image(self._normal_map)
                 bind_texture = BindTexture(texture=image.texture, index=2)
-
+            
+            self._instruction_group = InstructionGroup()
+            
+            
+            self._instruction_group.add(Callback(self.update_params))  
+            
             self.state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
                                      lighting=(float(self.lighting)),
                                      light_intensity=self.light_intensity,
                                      flip_coords=(float(self.flip_coords)),
                                      alpha=(float(self.alpha)),
+                                     #pitch=(float(self.pitch)),
+                                     #yaw=self.yaw,
+                                     #roll=(float(self.roll)),
+                                     shadows_bias = (float(self.shadows_bias)),
                                      normal_map_enabled=(float(normal_map_value)),
                                      specular_intensity = (float(self.specular_intensity)),
                                      specular_power = (float(self.specular_power)),
                                      min_light_intensity=(float(self.min_light_intensity)))
 
+        
 
-            self._instruction_group = InstructionGroup()
             self._instruction_group.add(self.state)
-
             self._translate = Translate(*self.translate)
+
+
             self._rotate = Rotate(*self.rotate)
             self._scale = Scale(*self.scale)
+
             self._instructions.append(self.state)
             self._instructions.append(self._translate)
             self._instructions.append(self._rotate)
             self._instructions.append(self._scale)
             self._instructions.append(self._instruction_group)
+            self._instructions.append(Callback(self.before_render))
+            
 
 
         elif self.init == 1:
+            self.current_callback_fbo = current_callback
+            self._shadow_instructions.append(Callback(self.update_params_fbo)) 
             state = ChangeState(cast_shadows=(float(self.cast_shadows)))
+                                             
             self._shadow_translate = Translate(*self.translate)
             self._shadow_rotate = Rotate(*self.rotate)
+            #self._scale = Scale(*self.scale)
+            
             self._shadow_scale = Scale(*self.scale)
             self._shadow_instructions.append(state)
             self._shadow_instructions.append(self._shadow_translate)
             self._shadow_instructions.append(self._shadow_rotate)
+            
             self._shadow_instructions.append(self._shadow_scale)
+            #self._instructions.append(Callback(self.before_render))
 
         elif self.init == 2:
+            self.current_callback_picking_fbo = current_callback
             mrange = 0
             if self.effect:
                 mrange = 0.50
+            
+            self._picking_instructions.append(Callback(self.update_params_picking_fbo))     
             state = ChangeState(id_color=(round(self.pick_id + mrange, 2), float(self.effect), 0.0))
             self._picking_translate = Translate(*self.translate)
             self._picking_rotate = Rotate(*self.rotate)
+            
             self._picking_scale = Scale(*self.scale)
             self._picking_instructions.append(state)
             self._picking_instructions.append(self._picking_translate)
             self._picking_instructions.append(self._picking_rotate)
+            
             self._picking_instructions.append(self._picking_scale)
+            self._instructions.append(Callback(self.before_render))
 
         elif self.init == 3:
             state = ChangeState(id=(self.motion_id))
@@ -408,6 +490,7 @@ class Node(Widget):
             self._blur_instructions.append(self._motion_blur_translate)
             self._blur_instructions.append(self._motion_blur_rotate)
             self._blur_instructions.append(self._motion_blur_scale)
+            self._instructions.append(Callback(self.before_render))
 
         UpdateNormalMatrix()
         for e in self._objs:
@@ -520,7 +603,9 @@ class Node(Widget):
                     if self.init == 0:
                         self.mesh = o
 
+        self._instructions.append(Callback(self.after_render))
         self.init += 1
+        
 
     def remove_a(self):
         if self.fbo_widget:

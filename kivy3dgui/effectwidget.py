@@ -647,7 +647,8 @@ class EffectWidget(FloatLayout):
             PopMatrix()
             self.cbs = Callback(self.reset_gl_context)
 
-        super(EffectWidget, self).__init__()
+
+        super(EffectWidget, self).__init__(**kwargs)
         self.size = C_SIZE
 
         Clock.schedule_interval(self.update_glsl, 0)

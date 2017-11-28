@@ -223,8 +223,7 @@ class Canvas3D(FloatLayout):
         if self.picking:
             self.init_picking()
         self.init_motion_blur()
-        super(Canvas3D, self).__init__(
-            size_hint=kwargs.get('size_hint', (1, 1)))
+        super(Canvas3D, self).__init__(**kwargs)
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
 
@@ -290,22 +289,24 @@ class Canvas3D(FloatLayout):
             self.nodes.remove(widget)
 
         for e in widget._instructions:
-            self.canvas.before.remove(e)
-
+            if e in self.canvas.before.children:
+                self.canvas.before.remove(e)
         widget._instructions = []
 
         for e in widget._shadow_instructions:
-            self.fbo.remove(e)
+            if e in self.fbo.children:
+                self.fbo.remove(e)
         widget._shadow_instructions = []
 
         for e in widget._picking_instructions:
-            self.picking_fbo.remove(e)
+            if e in self.picking_fbo.children:
+                self.picking_fbo.remove(e)
         widget._pick_instruction = []
 
         for e in widget._blur_instructions:
-            self.motion_blur_fbo.remove(e)
+            if e in self.motion_blur_fbo.children:
+                self.motion_blur_fbo.remove(e)
         widget._blur_instructions = []
-
         widget.clear()
 
     def init_fbo(self):
@@ -371,13 +372,46 @@ class Canvas3D(FloatLayout):
     def setup_gl_context(self, *args):
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glDisable(GL_POLYGON_OFFSET_FILL)
+
         glEnable(GL_BLEND)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)
 
+    def change_params(self, mesh):
+        self.canvas['pitch'] = float(mesh.pitch)
+        self.canvas['yaw'] = float(mesh.yaw)
+        self.canvas['roll'] = float(mesh.roll)
+        self.canvas['mesh_pos'] = mesh.translate[:]
+
+     
+        #self.canvas['axis_type'] = mesh.axis_type
+        
+    def change_params_fbo(self, mesh):
+        self.fbo['pitch'] = float(mesh.pitch)
+        self.fbo['yaw'] = float(mesh.yaw)
+        self.fbo['roll'] = float(mesh.roll)
+        
+       
+        self.fbo['mesh_pos'] = mesh.translate[:]
+
+    def change_params_picking_fbo(self, mesh):
+        self.picking_fbo['pitch'] = float(mesh.pitch)
+        self.picking_fbo['yaw'] = float(mesh.yaw)
+        self.picking_fbo['roll'] = float(mesh.roll)
+        self.picking_fbo['mesh_pos'] = mesh.translate[:]
+
     def setup_gl_context_shadow(self, *args):
         self.fbo.clear_buffer()
+        glEnable(GL_POLYGON_OFFSET_FILL)
+        glPolygonOffset(10, 1.0)     
+      
+        #glCullFace(GL_FRONT)
+        self.fbo["pitch"] = float(0)
+        self.fbo["yaw"] = float(0)
+        self.fbo["roll"] = float(0)
+
 
     def setup_gl_context_motion_blur(self, *args):
         glEnable(GL_DEPTH_TEST)
@@ -388,6 +422,7 @@ class Canvas3D(FloatLayout):
 
     def setup_gl_context_picking(self, *args):
         glEnable(GL_DEPTH_TEST)
+        glDisable(GL_POLYGON_OFFSET_FILL)
         self.picking_fbo.clear_buffer()
 
     def check_context(self, *args):
@@ -401,24 +436,24 @@ class Canvas3D(FloatLayout):
         with self.canvas.before:
             PushMatrix()
             Translate(bind=self._translate)
-            node.start()
+            node.start(self.change_params)
             PopMatrix()
 
         if self.shadow:
             with self.fbo:
                 PushMatrix()
-                node.start()
+                node.start(self.change_params_fbo)
                 PopMatrix()
 
         if self.picking:
             with self.picking_fbo:
                 PushMatrix()
-                node.start()
+                node.start(self.change_params_picking_fbo)
                 PopMatrix()
 
         with self.motion_blur_fbo:
             PushMatrix()
-            node.start()
+            node.start(self.change_params)
             PopMatrix()
 
         node.populate_fbo(node)
@@ -426,7 +461,7 @@ class Canvas3D(FloatLayout):
     def reset_gl_context(self, *args):
         glDisable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE)
-
+                
     def update_fbo(self, time):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
@@ -483,7 +518,7 @@ class Canvas3D(FloatLayout):
         self.fbo['cond'] = (0.0, 0.7)
         self.fbo['val_sin'] = (self.alpha, 0.0)
         # self.perspective_value += 0.04
-        # self.picking_fbo.texture.save("debug.png")
+        #self.picking_fbo.texture.save("debug.png")
         #self.fbo.texture.save("debug_shadows.png")
 
     def update_glsl(self, *largs):
