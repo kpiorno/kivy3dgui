@@ -8,6 +8,10 @@ It's easy to test, just download the code a run the examples. Enjoy it!!!
 
 You can watch a video example [here](https://vimeo.com/127000600).
 Another [video](https://vimeo.com/194306331) for Tour3D Example.
+### Work in progress
+The 3D Editor is in the early stage. Baby steps, many issues :) 
+
+![](https://github.com/kpiorno/kivy3dgui/blob/master/screenshots/3DEditor.gif)
 
 ### How to use
 #### Step 1
