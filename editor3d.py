@@ -47,6 +47,7 @@ class Minimal3dApp(App):
                         light_position: [-24.5, 150, 100]
                         shadow_origin: [-4,  1., -20.]
                         shadow_target: [-4.01, 0., -23.0]
+                        size_hint: 0.8, 1.0
                         
 
                         
@@ -571,7 +572,7 @@ class Minimal3dApp(App):
       
         
     def on_touch_move(self, widget, touch):
-        if not self.move_camera:
+        if not self.move_camera or touch.sx > 0.8:
             return True
         polar_angle = (touch.dy / self.layout3d.height) * 360        
         azimuth_angle = (touch.dx / self.layout3d.width) * -360
