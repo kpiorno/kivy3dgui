@@ -59,6 +59,11 @@ class NodeHelper(object):
         if self.current_mesh:
            self.current_mesh.translate = pos[:]     
         self.last_op = 0
+        
+        self.editor_manager.properties.ids.x_pos.text = str(round(pos[0], 2))
+        self.editor_manager.properties.ids.y_pos.text = str(round(pos[1], 2))
+        self.editor_manager.properties.ids.z_pos.text = str(round(pos[2], 2))
+        
            
     def set_scale(self, scale):
         self.scale = scale
@@ -74,6 +79,9 @@ class NodeHelper(object):
         if self.current_mesh:
            self.current_mesh.scale = self.scale[:]   
         self.last_op = 1   
+        self.editor_manager.properties.ids.x_scale.text = str(round(scale[0], 2))
+        self.editor_manager.properties.ids.y_scale.text = str(round(scale[1], 2))
+        self.editor_manager.properties.ids.z_scale.text = str(round(scale[2], 2))
 
     def yaw(self, value):
         rot = self.rot
@@ -154,4 +162,71 @@ class NodeHelper(object):
             e[0].pitch = rot[0]
             e[0].yaw = rot[1]
             e[0].roll = rot[2]
-        self.last_op = 2            
+        self.last_op = 2    
+        self.editor_manager.properties.ids.x_rot.text = str(round(rot[0], 2))
+        self.editor_manager.properties.ids.y_rot.text = str(round(rot[1], 2))
+        self.editor_manager.properties.ids.z_rot.text = str(round(rot[2], 2))    
+
+    def set_intensity(self, *args):
+        if self.current_mesh:
+            self.current_mesh.min_light_intensity = float(args[1])
+       
+    def set_alpha(self, *args):
+        if self.current_mesh:
+            self.current_mesh.alpha = float(args[1])
+
+    def set_receive_shadows(self, *args):
+        if self.current_mesh:
+            self.current_mesh.receive_shadows = float(args[1])
+       
+    def set_cast_shadows(self, *args):
+        if self.current_mesh:
+            self.current_mesh.cast_shadows = float(args[1])
+
+    def set_shadow_bias(self, *args):
+        if self.current_mesh:
+            self.current_mesh.shadows_bias = float(args[1])
+
+    def set_specular_intensity(self, *args):
+        if self.current_mesh:
+            self.current_mesh.specular_intensity = float(args[1])
+
+    def set_specular_power(self, *args):
+        if self.current_mesh:
+            self.current_mesh.specular_power = float(args[1])            
+            
+    def bind_props(self):
+        self.editor_manager.properties.ids.intensity.bind(value = self.set_intensity)
+        self.editor_manager.properties.ids.alpha.bind(value = self.set_alpha)
+        self.editor_manager.properties.ids.receive_shadows.bind(active = self.set_receive_shadows)
+        self.editor_manager.properties.ids.cast_shadows.bind(active = self.set_cast_shadows)
+        self.editor_manager.properties.ids.shadows_bias.bind(value = self.set_shadow_bias)
+        self.editor_manager.properties.ids.specular_intensity.bind(value = self.set_specular_intensity)
+        self.editor_manager.properties.ids.specular_power.bind(value = self.set_specular_power)
+        if self.current_mesh:
+            self.editor_manager.properties.ids.intensity.value = self.current_mesh.min_light_intensity
+            self.editor_manager.properties.ids.alpha.value = self.current_mesh.alpha
+            self.editor_manager.properties.ids.cast_shadows.active = self.current_mesh.cast_shadows
+            self.editor_manager.properties.ids.receive_shadows.active = self.current_mesh.receive_shadows
+            self.editor_manager.properties.ids.shadows_bias.value = self.current_mesh.shadows_bias
+            self.editor_manager.properties.ids.specular_intensity.value = self.current_mesh.specular_intensity
+            self.editor_manager.properties.ids.specular_power.value = self.current_mesh.specular_power
+
+        
+        #if self.current_mesh:
+        #    self.editor_manager.properties.ids.intensity.bind(value = self.current_mesh.setter("min_light_intensity"))
+        #    self.editor_manager.properties.ids.alpha.bind(value = self.current_mesh.setter("alpha"))
+        
+    def unbind_props(self):
+        self.editor_manager.properties.ids.intensity.unbind(value = self.set_intensity)
+        self.editor_manager.properties.ids.alpha.unbind(value = self.set_alpha)
+        self.editor_manager.properties.ids.receive_shadows.unbind(active = self.set_receive_shadows)
+        self.editor_manager.properties.ids.cast_shadows.unbind(active = self.set_cast_shadows)
+        self.editor_manager.properties.ids.shadows_bias.unbind(value = self.set_shadow_bias)
+        self.editor_manager.properties.ids.specular_intensity.unbind(value = self.set_specular_intensity)
+        self.editor_manager.properties.ids.specular_power.unbind(value = self.set_specular_power)        
+        
+        #if self.current_mesh:
+        #    self.editor_manager.properties.ids.intensity.unbind(value = self.current_mesh.setter("min_light_intensity"))
+        #    self.editor_manager.properties.ids.alpha.unbind(value = self.current_mesh.setter("alpha"))
+            

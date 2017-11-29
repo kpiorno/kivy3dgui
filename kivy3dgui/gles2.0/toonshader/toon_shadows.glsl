@@ -298,6 +298,7 @@ void main (void){
     bias = clamp(bias, 0.,shadows_bias);*/
 
     float visibility = 1.1;
+    if (ShadowCoord.x >= 0.0 && ShadowCoord.y >= 0.0 &&  ShadowCoord.x <= 1.0 && ShadowCoord.y <= 1.0)
     for (int i=0;i<4;i++){
       if ( texture2D( texture1, ShadowCoord.xy + poissonDisk[i]/700.0).z <  ShadowCoord.z-shadows_bias  ){
             visibility-=0.1;

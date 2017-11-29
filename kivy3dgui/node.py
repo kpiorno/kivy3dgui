@@ -239,6 +239,9 @@ class Node(Widget):
         self.current_anim_index = kwargs.get("current_anim_index", 0)
         self.axis_type = kwargs.get("axis_type", 0)
         self.light_intensity = kwargs.get("light_intensity", [1.0, 1.0, 1.0, 1.0])
+        self.min_light_intensity = kwargs.get("min_light_intensity", 0.0)
+        self.specular_intensity = kwargs.get("specular_intensity", 0.0)
+        self.specular_power = kwargs.get("specular_power", 0.0)
         self.normal_map = kwargs.get("normal_map", "")
         self._normal_map = kwargs.get("normal_map", "")
         self.alpha = kwargs.get("alpha", 1.0)
@@ -347,16 +350,17 @@ class Node(Widget):
         if len(self._normal_map) > 0 and self._instruction_group:
             image = Image(value)
             bind_texture = BindTexture(texture=image.texture, index=2)
-            state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
+            state = ChangeState(#enabled_shadow=(float(self.receive_shadows)),
                                 lighting=(float(self.lighting)),
                                 light_intensity=self.light_intensity,
                                 flip_coords=(float(self.flip_coords)),
-                                alpha=(float(self.alpha)),
-                                shadows_bias=(shadows_bias(self.alpha)),
+                                #alpha=(float(self.alpha)),
+                                #shadows_bias=(shadows_bias(self.alpha)),
                                 normal_map_enabled=(float(1)),
-                                specular_intensity=(float(self.specular_intensity)),
-                                specular_power=(float(self.specular_power)),
-                                min_light_intensity=(float(self.min_light_intensity)))
+                                #specular_intensity=(float(self.specular_intensity)),
+                                #specular_power=(float(self.specular_power)),
+                                #min_light_intensity=(float(self.min_light_intensity))"""
+                                )
 
 
             self._instruction_group.remove(self.state)
@@ -413,19 +417,20 @@ class Node(Widget):
             
             self._instruction_group.add(Callback(self.update_params))  
             
-            self.state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
+            self.state = ChangeState(#enabled_shadow=(float(self.receive_shadows)),
                                      lighting=(float(self.lighting)),
                                      light_intensity=self.light_intensity,
                                      flip_coords=(float(self.flip_coords)),
-                                     alpha=(float(self.alpha)),
+                                     #alpha=(float(self.alpha)),
                                      #pitch=(float(self.pitch)),
                                      #yaw=self.yaw,
                                      #roll=(float(self.roll)),
-                                     shadows_bias = (float(self.shadows_bias)),
+                                     #shadows_bias = (float(self.shadows_bias)),
                                      normal_map_enabled=(float(normal_map_value)),
-                                     specular_intensity = (float(self.specular_intensity)),
-                                     specular_power = (float(self.specular_power)),
-                                     min_light_intensity=(float(self.min_light_intensity)))
+                                     #specular_intensity = (float(self.specular_intensity)),
+                                     #specular_power = (float(self.specular_power)),
+                                     #min_light_intensity=(float(self.min_light_intensity))
+                                     )
 
         
 
@@ -448,14 +453,14 @@ class Node(Widget):
         elif self.init == 1:
             self.current_callback_fbo = current_callback
             self._shadow_instructions.append(Callback(self.update_params_fbo)) 
-            state = ChangeState(cast_shadows=(float(self.cast_shadows)))
+            #state = ChangeState(cast_shadows=(float(self.cast_shadows)))
                                              
             self._shadow_translate = Translate(*self.translate)
             self._shadow_rotate = Rotate(*self.rotate)
             #self._scale = Scale(*self.scale)
             
             self._shadow_scale = Scale(*self.scale)
-            self._shadow_instructions.append(state)
+            #self._shadow_instructions.append(state)
             self._shadow_instructions.append(self._shadow_translate)
             self._shadow_instructions.append(self._shadow_rotate)
             

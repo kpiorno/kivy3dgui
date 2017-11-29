@@ -18,6 +18,7 @@ class SpaceEditor:
                 alpha: 0.5
                 always_on_top: True
                 receive_shadows: False
+                cast_shadows: False
                 meshes: ("{0}",)
                 Button:
                     id: c_button

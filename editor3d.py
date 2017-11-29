@@ -223,7 +223,148 @@ class Minimal3dApp(App):
             GridLayout
                 cols: 1
                 size_hint: 0.2, 1.0
-                Button:
+                GridLayout:
+                    cols: 1
+                    GridLayout:
+                        
+                        cols: 1
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                text: "Name"
+                            TextInput:    
+                                text: "Object1"
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                text: "Position (X, Y, Z)"
+                            GridLayout:
+                                cols: 3
+                                TextInput:
+                                    id: x_pos
+                                TextInput:
+                                    id: y_pos
+                                TextInput:
+                                    id: z_pos
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'justify'
+                                text: "Scale (X, Y, Z)"
+                            GridLayout:
+                                cols: 3
+                                TextInput:
+                                    id: x_scale
+                                TextInput:
+                                    id: y_scale
+                                TextInput:
+                                    id: z_scale                                
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'center'
+                                text: "Rotation (X, Y, Z)"
+                            GridLayout:
+                                cols: 3
+                                TextInput:
+                                    id: x_rot
+                                TextInput:
+                                    id: y_rot
+                                TextInput: 
+                                    id: z_rot                                
+                            
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Cast Shadows"
+                            CheckBox:  
+                                id: cast_shadows
+                                active: True
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Receive Shadows"
+                            CheckBox:  
+                                id: receive_shadows
+                                active: True
+
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Light Intensity"
+                            Slider: 
+                                id: intensity
+                                min: 0.0
+                                max: 1.0
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Specular Intensity"
+                            Slider: 
+                                id: specular_intensity
+                                min: 0.0
+                                max: 300                                
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Specular Power"
+                            Slider: 
+                                id: specular_power
+                                min: 0.0
+                                max: 300                                
+                                
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Shadow Bias"
+                            Slider: 
+                                id: shadows_bias
+                                min: 0.0
+                                max: 0.3                                
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Opacity"
+                            Slider: 
+                                id: alpha
+                                min: 0.0
+                                max: 1.0
+                                value: 1.0
+                                
+                                                        
+                        GridLayout:
+                            size_hint: 1.0, 0.2
+                           
+                    Button:
+                        text: "Down"
+                
 
         ''' 
         properties = Builder.load_string(dedent(str_prop))
@@ -246,6 +387,8 @@ class Minimal3dApp(App):
         grid.add_widget(layout3d)
         
         self.properties = properties
+        
+        self.editor_manager.properties = self.properties
         grid.add_widget(self.properties)
         return grid
         #return layout3d
@@ -289,6 +432,7 @@ class Minimal3dApp(App):
         self.space_editor.free()
         self.space_editor = SpaceEditor(self.layout3d, self, self.editor_manager)
         self.space_editor.node_helper.current_mesh = box
+        self.space_editor.node_helper.bind_props()
         box.translate = g_pos[:]
         #self.space_editor.node_helper.move_to(g_pos[:])
 
@@ -325,12 +469,16 @@ class Minimal3dApp(App):
         g_scale = self.space_editor.node_helper.pos[:]
         
         box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, "box" if self.layout3d.f_type == 0 else "sphere")))
+        self.space_editor.node_helper.unbind_props()
         self.set_mesh(box, self.layout3d.look_at[3:6][:], g_scale)
+        self.space_editor.node_helper.set_scale(box.scale[:])
         self.space_editor.node_helper.save_command(3, self.layout3d)
 
         
     def on_select_button(self, *args):        
+        self.space_editor.node_helper.unbind_props()
         self.space_editor.node_helper.current_mesh = args[0].s_mesh
+        self.space_editor.node_helper.bind_props()
         g_pos = args[0].s_mesh.translate
         rot = [args[0].s_mesh.pitch, args[0].s_mesh.yaw, args[0].s_mesh.roll]
         g_scale = args[0].s_mesh.scale

@@ -384,7 +384,13 @@ class Canvas3D(FloatLayout):
         self.canvas['yaw'] = float(mesh.yaw)
         self.canvas['roll'] = float(mesh.roll)
         self.canvas['mesh_pos'] = mesh.translate[:]
-
+        self.canvas['min_light_intensity'] = (float(mesh.min_light_intensity))
+        self.canvas['specular_power'] = (float(mesh.specular_power))
+        self.canvas['specular_intensity'] = (float(mesh.specular_intensity))
+        self.canvas['shadows_bias'] = (float(mesh.shadows_bias))
+        self.canvas['alpha'] = (float(mesh.alpha))
+        self.canvas['enabled_shadow'] = (float(mesh.receive_shadows))
+     
      
         #self.canvas['axis_type'] = mesh.axis_type
         
@@ -392,7 +398,7 @@ class Canvas3D(FloatLayout):
         self.fbo['pitch'] = float(mesh.pitch)
         self.fbo['yaw'] = float(mesh.yaw)
         self.fbo['roll'] = float(mesh.roll)
-        
+        self.fbo['cast_shadows'] = (float(mesh.cast_shadows))   
        
         self.fbo['mesh_pos'] = mesh.translate[:]
 

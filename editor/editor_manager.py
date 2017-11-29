@@ -83,6 +83,9 @@ class Remove(Command):
             "current_anim_index": args[0].current_anim_index,
             "axis_type": args[0].axis_type,
             "light_intensity": args[0].light_intensity,
+            "min_light_intensity": args[0].min_light_intensity,
+            "specular_intensity": args[0].specular_intensity,
+            "specular_power": args[0].specular_power,
             "normal_map": args[0].normal_map,
             "alpha": args[0].alpha,
             "shadows_bias": args[0].shadows_bias
