@@ -1,10 +1,13 @@
 import math
+import os
+import sys
 from textwrap import dedent
 from kivy.app import App
 from kivy.animation import Animation
 from kivy.lang import Builder
 from kivy.graphics.transformation import Matrix
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from editor.space_editor import SpaceEditor
@@ -15,6 +18,10 @@ class Minimal3dApp(App):
     editor_manager = ObjectProperty(None, allownone=True)
     
     def build(self):
+        self.current_mesh_path = ""
+        self.current_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+        self.current_assets_dir = os.path.join(self.current_dir, "assets")
+
         self.editor_manager = EditorManager(self)
         self.move_camera = True   
         self.cam_distance = 10
@@ -22,8 +29,8 @@ class Minimal3dApp(App):
         
         init_dist = []
         rad = 70.0
-        azimuth = 0 #0 to 2PI
-        polar = 90 #0 to PI
+        azimuth = 19 #0 to 2PI
+        polar = 73 #0 to PI
         
         self.m_sx = 0
 
@@ -56,141 +63,31 @@ class Minimal3dApp(App):
                         Node:
                             id: bottom
                             rotate: (-90, 1, 0, 0)
-                            scale: (1.0, 0.8, 1.0)
+                            scale: (1.0, 0.8, 0.1)
                             translate: (0, -10, -15)
                             min_light_intensity: 0.5
                             receive_shadows: True                            
                             meshes: ("./meshes/2dbox.obj",)
-                            Button:
-                                id: bottom_floor
-                                text: "Create a Box"
-                     
-                                        
-                        Node:
-                            id: left
-                            rotate: (90, 0, 1, 0)
-                            scale: (1.0, 0.8, 1.0)
-                            translate: (-80, 0, 0)
-                            min_light_intensity: 1.0
-                            receive_shadows: False                            
-                            meshes: ("./meshes/2dbox.obj",)
-                            Button:
-                                text: "Hello"
+                            # Button:
+                                # id: bottom_floor
+                                # text: "Create a Box"
+                            FloatLayout:    
                                 canvas:
                                     Color:
-                                        rgb: 1.0, 0.0, 1.0, 1.0
+                                        rgb: 0.5, 0.5, 0.5, 1.0
                                     Rectangle:
                                         size: self.size
-                                        pos: self.pos                        
-                                        
-                        Node:
-                            id: right
-                            rotate: (-90, 0, 1, 0)
-                            scale: (0.8, 1.0, 1.0)
-                            translate: (80, 0, 0)
-                            min_light_intensity: 1.0
-                            receive_shadows: False                            
-                            meshes: ("./meshes/2dbox.obj",)
-                            Button:
-                                text: "Hello"
-                                canvas:
-                                    Color:
-                                        rgb: 0.0, 0.0, 1.0, 1.0
-                                    Rectangle:
-                                        size: self.size
-                                        pos: self.pos                        
-                        Node:
-                            id: upper
-                            rotate: (90, 1, 0, 0)
-                            scale: (0.8, 1.0, 1.0)
-                            translate: (0, 80, 0)
-                            min_light_intensity: 1.0
-                            receive_shadows: False                            
-                            meshes: ("./meshes/2dbox.obj",)
-                            Button:
-                                text: "Hello"
-                                canvas:
-                                    Color:
-                                        rgb: 0.0, 1.0, 0.0, 1.0
-                                    Rectangle:
-                                        size: self.size
-                                        pos: self.pos                        
-                        Node:
-                            id: front
-                            rotate: (0, 0, 1, 0)
-                            scale: (1.0, 1.2, 0.8)
-                            translate: (0, 0, -80)
-                            min_light_intensity: 1.0
-                            receive_shadows: True                            
-                            meshes: ("./meshes/2dbox.obj",)
-                            FloatLayout:
-                                GridLayout:
-                                    cols: 3
-                                    size_hint: 1.0, 1.0
-                                    #pos_hint: {"x": 1.0, "y": 1.0}
-                               
-                                    CheckBox:
-                                        text: "3D Editor?"
-                                            
-                                    Spinner:
-                                        id: spinner_c
-                                        text: "Cube"
-                                        values: ('Cube', 'Sphere')
-                                        on_text:
-                                            bottom_floor.text = "Create a Box" if args[1] == "Cube"  else "Create a Sphere"; 
-                                        on_text:
-                                            root.f_type= 0 if args[1] == "Cube"  else 1 
-                                            
-                                            
-                                    Button:
-                                        text: "Editor"
-                                        size_hint: 1.0, 1.0
-                                        font_size: 64                                    
-                                    Button:
-                                        text: "Editor"
-                                        size_hint: 1.0, 1.0
-                                        font_size: 64
-                                    Button:
-                                        text: "Editor"
-                                        size_hint: 1.0, 1.0
-                                        font_size: 64                                    
-                                    TextInput:
-                                        text: "Editor"
-                                        size_hint: 1.0, 1.0
-                                        font_size: 32         
-
-                                        
-                                    Button:
-                                        text: "Editor"
-                                        size_hint: 1.0, 1.0
-                                        font_size: 64                                    
-
-                                    
-                                
-                     
-                        Node:
-                            id: back
-                            rotate: (-180, 0, 1, 0)
-                            scale: (1.0, 1.0, 0.8)
-                            translate: (0, 0, 80)
-                            min_light_intensity: 1.0
-                            meshes: ("./meshes/2dbox.obj",)
-                            Button:
-                                text: "Hello"
-                                canvas:
-                                    Color:
-                                        rgb: 0.5, 0.1, 0.8, 1.0
-                                    Rectangle:
-                                        size: self.size
-                                        pos: self.pos   
+                                        pos: self.pos       
+ 
                         Button:
                             id: undo
                             size_hint: (0.1, 0.1)
+                            pos_hint: {"x": 0.80, "y": 0}
                             text: "Undo"
                             
                         Button:
                             id: delete
-                            pos_hint: {"x": 0.1, "y": 0}
+                            pos_hint: {"x": 0.90, "y": 0}
                             size_hint: (0.1, 0.1)
                             
                             text: "Remove"                            
@@ -214,14 +111,11 @@ class Minimal3dApp(App):
                 receive_shadows: True
                 #normal_map: "./editor/images/normal.png"
                 
-                meshes: ("./meshes/{4}.obj",)
-                FloatLayout:
-                    Button:
-                        size_hint: (1., 1.)
-                        id: a_button
+                #meshes: ("{4}",)
             '''
         str_prop = '''    
-            GridLayout
+
+            BoxLayout
                 cols: 1
                 size_hint: 0.2, 1.0
                 GridLayout:
@@ -229,6 +123,42 @@ class Minimal3dApp(App):
                     GridLayout:
                         
                         cols: 1
+                        BoxLayout:
+                            id: box_pos
+                            orientation: 'vertical'
+
+                            FloatLayout:
+                                id: zone
+                            
+                            #SelectableView:
+
+
+                            Button:
+                                id: create_selected
+                                size_hint: (1.0, 0.2)
+                                text: "Create"
+ 
+                        GridLayout:
+                            cols: 2
+                            size_hint_y: 0.3
+
+
+                            Label:
+                                text: "Primitives:"
+                                size_hint: 1.0, 0.2
+                            Label:    
+                                size_hint: 1.0, 0.2
+                            Button:
+                                id: create_box
+                                text: "Box"
+                                size_hint: 0.1, 0.2
+                                on_press: app.create_box()
+                            Button:
+                                text: "Sphere"
+                                id: create_sphere
+                                size_hint: 0.1, 0.1
+                                on_press: app.create_sphere()
+                                
                         GridLayout:
                             cols: 2
                             size_hint: 1.0, 0.1
@@ -322,7 +252,7 @@ class Minimal3dApp(App):
                             Slider: 
                                 id: specular_intensity
                                 min: 0.0
-                                max: 300                                
+                                max: 10                                
                         GridLayout:
                             cols: 2
                             size_hint: 1.0, 0.1
@@ -361,17 +291,55 @@ class Minimal3dApp(App):
                                 
                                                         
                         GridLayout:
+                            cols: 1
                             size_hint: 1.0, 0.2
-                           
-                    Button:
-                        text: "Down"
+                            
+
+                            
+                     
+                            
                 
 
         ''' 
+        assets_path_str= dedent(''' 
+                        #: import os os
+                        
+                        FloatLayout:
+                            id: box_pos
+                            
+                            # BoxLayout:
+                                # size: box_pos.size
+                                # BoxLayout:
+                                    # pos: box_pos.pos
+                                    # size_hint_y: None
+                                    # height: sp(52)
+
+                                    # Button:
+                                        # text: 'Icon View'
+                                        # on_press: fc.view_mode = 'icon'
+                                    # Button:
+                                        # text: 'List View'
+                                        # on_press: fc.view_mode = 'list'
+
+                            FileChooser:
+                                id: fc
+                                rootpath: app.current_assets_dir
+                                #pos_hint: {"x": 0.8, "y": 0.8}
+                                #size_hint: (1.0, 1.0)
+                                FileChooserIconLayout
+                                    pos_hint: {"x": 0.8, "y":0.7}
+                                    size_hint: (0.2, 0.3)
+                                FileChooserListLayout  
+                                    pos_hint: {"x": 0.8, "y":0.7}
+                                    size_hint: (0.2, 0.3)'''
+                                    )
+                                    
+        
         properties = Builder.load_string(dedent(str_prop))
+        assets_path = Builder.load_string(assets_path_str)
         
         layout3d.bind(on_touch_move = self.on_touch_move)
-        layout3d.ids.bottom_floor.bind(on_touch_up = self.bottom_touch)
+      
         layout3d.ids.undo.bind(on_touch_up = self.undo)
         layout3d.ids.delete.bind(on_touch_up = self.remove)
         
@@ -384,17 +352,41 @@ class Minimal3dApp(App):
         #keyboard = Window.request_keyboard(self._keyboard_released, self)
         #keyboard.bind(on_key_down=self._keyboard_on_key_down, on_key_up=self._keyboard_released)
         
+        float_l = FloatLayout()
         grid = GridLayout(cols=2)
+        float_l.add_widget(grid)
         grid.add_widget(layout3d)
         
         self.properties = properties
+        self.assets_path = assets_path
         
         self.editor_manager.properties = self.properties
         grid.add_widget(self.properties)
-        return grid
+        float_l.add_widget(self.assets_path)
+        
+        x,y,z = self.get_camera_pos()
+        self.layout3d.look_at = [x, y, z-10, 0, 0, -10, 0, 1, 0]
+        
+        #Selected mesh
+        properties.ids.create_selected.bind(on_press = self.create_selected)
+        
+        return float_l
         #return layout3d
         
+    def create_selected(self, *args):
+        if self.assets_path.ids.fc.selection:
+            
+            self.current_mesh_path = os.path.join(self.current_assets_dir, os.path.basename(self.assets_path.ids.fc.selection[0]))
+            self.create_mesh()
     
+    def create_sphere(self, *args):
+        self.current_mesh_path = "./meshes/sphere.obj"
+        self.create_mesh()
+        
+    def create_box(self, *args):
+        self.current_mesh_path = "./meshes/box.obj"
+        self.create_mesh()        
+        
     def _keyboard_released(self, window, keycode):
         self.super = []
 
@@ -413,6 +405,7 @@ class Minimal3dApp(App):
             
     def undo(self, *args):
         self.editor_manager.restore()
+
         
     def remove(self, *args):
         if self.space_editor.node_helper.current_mesh:
@@ -441,11 +434,12 @@ class Minimal3dApp(App):
         
         sel = None
         if not selector:
-            sel = box.ids.a_button
+            #sel = box.ids.a_button
+            sel = box.fbo_widget
         else:
             sel = selector
             
-        sel.bind(on_touch_up = self.on_select_button)
+        sel.bind(on_touch_down = self.on_select_button)
 
         #box.fbo_widget.bind(on_touch_up = self.on_select_button)
         sel.s_mesh = box
@@ -462,18 +456,24 @@ class Minimal3dApp(App):
             self.space_editor.node_helper.move_to(g_pos[:])
 
     
+    def create_mesh(self):
+        
+        g_scale = self.space_editor.node_helper.pos[:]
+        
+        box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, self.current_mesh_path)))
+        box.meshes = (self.current_mesh_path,)
+        self.space_editor.node_helper.unbind_props()
+        self.set_mesh(box, self.layout3d.look_at[3:6][:], g_scale)
+        self.space_editor.node_helper.set_scale(box.scale[:])
+        self.space_editor.node_helper.save_command(3, self.layout3d)        
+    
     def bottom_touch(self, widget, touch):
         size = widget.size
         touch_pos = touch.pos
         center = [size[0] / 2, size[1] / 2]
+        self.create_mesh()
         #g_pos = self.space_editor.node_helper.pos[:]
-        g_scale = self.space_editor.node_helper.pos[:]
-        
-        box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, "box" if self.layout3d.f_type == 0 else "sphere")))
-        self.space_editor.node_helper.unbind_props()
-        self.set_mesh(box, self.layout3d.look_at[3:6][:], g_scale)
-        self.space_editor.node_helper.set_scale(box.scale[:])
-        self.space_editor.node_helper.save_command(3, self.layout3d)
+
 
         
     def on_select_button(self, *args):        

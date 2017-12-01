@@ -193,7 +193,8 @@ class NodeHelper(object):
 
     def set_specular_power(self, *args):
         if self.current_mesh:
-            self.current_mesh.specular_power = float(args[1])            
+            self.current_mesh.specular_power = float(args[1])     
+
             
     def bind_props(self):
         self.editor_manager.properties.ids.intensity.bind(value = self.set_intensity)
@@ -203,6 +204,7 @@ class NodeHelper(object):
         self.editor_manager.properties.ids.shadows_bias.bind(value = self.set_shadow_bias)
         self.editor_manager.properties.ids.specular_intensity.bind(value = self.set_specular_intensity)
         self.editor_manager.properties.ids.specular_power.bind(value = self.set_specular_power)
+
         if self.current_mesh:
             self.editor_manager.properties.ids.intensity.value = self.current_mesh.min_light_intensity
             self.editor_manager.properties.ids.alpha.value = self.current_mesh.alpha

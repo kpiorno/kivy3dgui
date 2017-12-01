@@ -13,7 +13,7 @@ class SpaceEditor:
         axis = '''
             Node:
                 translate: (0, 0, 0)
-                scale: (0.05, 0.05, 0.05)
+                scale: (0.08, 0.08, 0.08)
                 min_light_intensity: 0.8
                 alpha: 0.5
                 always_on_top: True

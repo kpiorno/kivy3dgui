@@ -96,17 +96,18 @@ class Remove(Command):
     def restore(self, *args):
         
         node = Node(**self.c_dict)
-        float = dedent("""
-                FloatLayout:
-                    Button:
-                        size_hint: (1., 1.)
-                        id: a_button""")
-        selector = Builder.load_string(float)
-        node.add_widget( selector )   
+        #float = dedent("""
+        #        FloatLayout:
+        #            Button:
+        #                size_hint: (1., 1.)
+        #                id: a_button""")
+        #selector = Builder.load_string(float)
+        selector = node.fbo_widget
+        #node.add_widget( selector )   
         for e in args[0][:-1]:
             if e.obj == self.obj:
                 e.obj = node
-        self.callback(node, node.translate, node.scale, selector.ids.a_button, [node.pitch, node.yaw, node.roll])        
+        self.callback(node, node.translate, node.scale, selector, [node.pitch, node.yaw, node.roll])        
         #self.layout.add_widget(node)    
         
 
