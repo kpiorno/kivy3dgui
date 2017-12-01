@@ -71,6 +71,7 @@ class Remove(Command):
     def __init__(self, *args):
         self.obj = args[0]
         self.c_dict = {
+            "id": args[0].id,     
             "translate": args[0].translate,
             "rotate": args[0].rotate,
             "pitch": args[0].pitch,
@@ -88,6 +89,7 @@ class Remove(Command):
             "specular_power": args[0].specular_power,
             "normal_map": args[0].normal_map,
             "alpha": args[0].alpha,
+            "alpha_threshold": args[0].alpha_threshold,
             "shadows_bias": args[0].shadows_bias
         }        
         self.layout = args[1]

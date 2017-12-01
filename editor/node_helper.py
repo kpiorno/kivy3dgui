@@ -1,7 +1,8 @@
 import math
-from textwrap import dedent
+import os
 from editor.editor_manager import Move, Scale, Rotate, Create, Remove
 from kivy.properties import BooleanProperty, ListProperty, ObjectProperty, NumericProperty, StringProperty
+
 
 class NodeHelper(object):
     meshes = []
@@ -174,6 +175,10 @@ class NodeHelper(object):
     def set_alpha(self, *args):
         if self.current_mesh:
             self.current_mesh.alpha = float(args[1])
+            
+    def set_alpha_threshold(self, *args):
+        if self.current_mesh:
+            self.current_mesh.alpha_threshold = float(args[1])            
 
     def set_receive_shadows(self, *args):
         if self.current_mesh:
@@ -195,10 +200,20 @@ class NodeHelper(object):
         if self.current_mesh:
             self.current_mesh.specular_power = float(args[1])     
 
+    def load_kv (self, current_dir):
+        if self.current_mesh:
+            file_path = os.path.join(current_dir, self.current_mesh.id)
+            self.current_mesh.load_kv_file(file_path+".kv")
+            #self.current_mesh
+            
+    def set_id (self, name):
+        if self.current_mesh:
+            self.current_mesh.id = name            
             
     def bind_props(self):
         self.editor_manager.properties.ids.intensity.bind(value = self.set_intensity)
         self.editor_manager.properties.ids.alpha.bind(value = self.set_alpha)
+        self.editor_manager.properties.ids.alpha_threshold.bind(value = self.set_alpha_threshold)
         self.editor_manager.properties.ids.receive_shadows.bind(active = self.set_receive_shadows)
         self.editor_manager.properties.ids.cast_shadows.bind(active = self.set_cast_shadows)
         self.editor_manager.properties.ids.shadows_bias.bind(value = self.set_shadow_bias)
@@ -208,11 +223,13 @@ class NodeHelper(object):
         if self.current_mesh:
             self.editor_manager.properties.ids.intensity.value = self.current_mesh.min_light_intensity
             self.editor_manager.properties.ids.alpha.value = self.current_mesh.alpha
+            self.editor_manager.properties.ids.alpha_threshold.value = self.current_mesh.alpha_threshold
             self.editor_manager.properties.ids.cast_shadows.active = self.current_mesh.cast_shadows
             self.editor_manager.properties.ids.receive_shadows.active = self.current_mesh.receive_shadows
             self.editor_manager.properties.ids.shadows_bias.value = self.current_mesh.shadows_bias
             self.editor_manager.properties.ids.specular_intensity.value = self.current_mesh.specular_intensity
             self.editor_manager.properties.ids.specular_power.value = self.current_mesh.specular_power
+            self.editor_manager.properties.ids.object_name.text = str(self.current_mesh.id)
 
         
         #if self.current_mesh:

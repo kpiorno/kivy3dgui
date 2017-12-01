@@ -1,6 +1,9 @@
 __author__ = 'kpiorno'
 import os
+import math
+from textwrap import dedent 
 from xml.dom.minidom import parse
+
 from itertools import *
 from kivy.graphics import *
 from kivy.core.image import Image
@@ -15,8 +18,9 @@ from kivy.graphics.texture import Texture
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
 from kivy3dgui import canvas3d
+from kivy.lang import Builder
 
-import math
+
 
 
 def normalize(v):
@@ -195,6 +199,7 @@ class Node(Widget):
     always_on_top = BooleanProperty(False)
 
     alpha = NumericProperty(1.0)
+    alpha_threshold = NumericProperty(1.0)
     axis_type = NumericProperty(0)
     
     shadows_bias = NumericProperty(0.01)
@@ -245,6 +250,7 @@ class Node(Widget):
         self.normal_map = kwargs.get("normal_map", "")
         self._normal_map = kwargs.get("normal_map", "")
         self.alpha = kwargs.get("alpha", 1.0)
+        self.alpha_threshold = kwargs.get("alpha_threshold", 1.0)
         self.shadows_bias = kwargs.get("shadows_bias", 0.01)
         self.objs = []
 
@@ -269,6 +275,14 @@ class Node(Widget):
     def on_alpha_blending(self, widget, value):
         if self.fbo_widget is not None:
             self.fbo_widget.alpha_blending = self.alpha_blending
+            
+    def load_kv_file(self, file_path):
+        for e in self.fbo_widget.children:
+            self.fbo_widget.remove_widget(e)
+            
+        if os.path.isfile(file_path):
+            res = Builder.load_file(file_path)
+            self.add_widget(res)
             
     def on_meshes(self, widget, value):
         if self.init == -1:

@@ -216,6 +216,7 @@ varying mat4 modelview_mat_frag;
 varying mat4 normal_mat_frag;
 
 uniform float alpha;
+uniform float alpha_threshold;
 uniform float shadows_bias;
 uniform float enabled_shadow;
 uniform float min_light_intensity;
@@ -366,7 +367,10 @@ void main (void){
 
 
     f_color = vec4((color1).xyz*visibility*diffuse, res_alpha) + SpecularColor;
-    f_color.a = alpha;
+    if (color1.r <= alpha_threshold && color1.g <= alpha_threshold && color1.b <= alpha_threshold)
+        f_color.a = alpha;
+    else    
+        f_color.a = 1.0;
     f_color += ambient_light;
     gl_FragColor = f_color;
 

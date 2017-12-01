@@ -14,10 +14,14 @@ from editor.space_editor import SpaceEditor
 from editor.editor_manager import EditorManager
 from kivy.core.window import Window, Keyboard
 
-class Minimal3dApp(App):
+class Editor3dApp(App):
     editor_manager = ObjectProperty(None, allownone=True)
     
     def build(self):
+        self.title = "Editor 3D"
+        self.data = [""]
+        self.mesh_count = 1
+
         self.current_mesh_path = ""
         self.current_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
         self.current_assets_dir = os.path.join(self.current_dir, "assets")
@@ -61,7 +65,7 @@ class Minimal3dApp(App):
                         shadow_threshold: 0.3 
                         post_processing: True                        
                         Node:
-                            id: bottom
+                            id: ____editor_3d_bottom____
                             rotate: (-90, 1, 0, 0)
                             scale: (1.0, 0.8, 0.1)
                             translate: (0, -10, -15)
@@ -99,6 +103,7 @@ class Minimal3dApp(App):
                     
         self.box_str = '''
             Node:
+                id: {5}
                 rotate: ({3}, 0, 1, 0)
                 yaw: 45
                 pitch: 0
@@ -166,7 +171,10 @@ class Minimal3dApp(App):
                                 halign: 'left'
                                 text: "Name"
                             TextInput:    
+                                id: object_name
                                 text: "Object1"
+                                on_text: app.name_change(*args)
+                                    
                         GridLayout:
                             cols: 2
                             size_hint: 1.0, 0.1
@@ -282,12 +290,50 @@ class Minimal3dApp(App):
                             Label:
                                 halign: 'left'
                                 size_hint: 0.8, 1.0
-                                text: "Opacity"
+                                text: "Alpha"
                             Slider: 
                                 id: alpha
                                 min: 0.0
                                 max: 1.0
                                 value: 1.0
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Alpha Threshold"
+                            Slider: 
+                                id: alpha_threshold
+                                min: 0.0
+                                max: 1.0
+                                value: 1.0                                
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Kv File"
+                            Button: 
+                                id: load_kv
+                                text: "Load"  
+                                on_press: app.load_kv_file(*args)    
+                        BoxLayout:        
+                            size_hint_y: 0.1
+                            
+                        GridLayout:
+                            cols: 2
+                            size_hint: 1.0, 0.1
+                            Label:
+                                halign: 'left'
+                                size_hint: 0.8, 1.0
+                                text: "Scene"
+                            Button: 
+                                id: save_scene
+                                text: "Save"  
+                                on_press: app.save_scene(*args)                                    
+                                
                                 
                                                         
                         GridLayout:
@@ -327,16 +373,68 @@ class Minimal3dApp(App):
                                 #pos_hint: {"x": 0.8, "y": 0.8}
                                 #size_hint: (1.0, 1.0)
                                 FileChooserIconLayout
-                                    pos_hint: {"x": 0.8, "y":0.7}
-                                    size_hint: (0.2, 0.3)
+                                    pos_hint: {"x": 0.8, "y":0.73}
+                                    size_hint: (0.2, 0.27)
                                 FileChooserListLayout  
-                                    pos_hint: {"x": 0.8, "y":0.7}
-                                    size_hint: (0.2, 0.3)'''
+                                    pos_hint: {"x": 0.8, "y":0.73}
+                                    size_hint: (0.2, 0.27)'''
                                     )
+                                    
+        save_dialog = dedent(''' 
+                        FloatLayout:
+                            id: save_dialog
+                            pos_hint: {"x": 4.0, "y": 4.0}
+                            size_hint: (0.35, 0.35)
+                            
+                            BoxLayout:
+                                pos_hint: {"x": 1.0, "y": 1.0}
+                                size_hint: (0.8, 0.6)
+                            
+                                orientation: 'vertical'
+                                Label:
+                                    text: "SAVING SCENE"
+                                    canvas.before:
+                                        Color:
+                                            rgb: 0.5, 0.5, 0.5, 1.0
+                                        Rectangle:
+                                            size: self.size
+                                            pos: self.pos                                         
+                                GridLayout:    
+                                    cols: 2
+                                    Label:
+                                        text: "Directory Name:"
+                                        canvas.before:
+                                            Color:
+                                                rgb: 0.2, 0.2, 0.2, 1.0
+                                            Rectangle:
+                                                size: self.size
+                                                pos: self.pos                                            
+                                    TextInput:
+                                        multiline: False
+                                        font_size: 42
+                                        
+                                GridLayout:    
+                                    cols: 2
+                                    Button:
+                                        text: "Accept"
+                                    Button:
+                                        text: "Cancel"
+                                        on_press: save_dialog.pos_hint = {"x": 4.0, "y": 4.0}
+                                Label:
+                                    text: "El directorio ya existe"
+                                    canvas.before:
+                                        Color:
+                                            rgb: 0.2, 0.2, 0.2, 1.0
+                                        Rectangle:
+                                            size: self.size
+                                            pos: self.pos   
+                                
+                        ''')                                    
                                     
         
         properties = Builder.load_string(dedent(str_prop))
         assets_path = Builder.load_string(assets_path_str)
+        self.save_dialog = Builder.load_string(save_dialog)
         
         layout3d.bind(on_touch_move = self.on_touch_move)
       
@@ -352,9 +450,9 @@ class Minimal3dApp(App):
         #keyboard = Window.request_keyboard(self._keyboard_released, self)
         #keyboard.bind(on_key_down=self._keyboard_on_key_down, on_key_up=self._keyboard_released)
         
-        float_l = FloatLayout()
+        float_layaout = FloatLayout()
         grid = GridLayout(cols=2)
-        float_l.add_widget(grid)
+        float_layaout.add_widget(grid)
         grid.add_widget(layout3d)
         
         self.properties = properties
@@ -362,7 +460,9 @@ class Minimal3dApp(App):
         
         self.editor_manager.properties = self.properties
         grid.add_widget(self.properties)
-        float_l.add_widget(self.assets_path)
+        float_layaout.add_widget(self.assets_path)
+        float_layaout.add_widget(self.save_dialog)
+
         
         x,y,z = self.get_camera_pos()
         self.layout3d.look_at = [x, y, z-10, 0, 0, -10, 0, 1, 0]
@@ -370,8 +470,21 @@ class Minimal3dApp(App):
         #Selected mesh
         properties.ids.create_selected.bind(on_press = self.create_selected)
         
-        return float_l
+        return float_layaout
         #return layout3d
+        
+    def save_scene(self, *args):
+        if not self.data[0]:
+            self.save_dialog.pos_hint = {"x": 0, "y": 0}
+        
+
+    def name_change(self, *args):
+        #self.space_editor.node_helper.load_kv(self.current_dir, args[1].replace(" ", "_"))
+        self.space_editor.node_helper.set_id(args[1].replace(" ", "_"))
+        
+    def load_kv_file(self, *args):
+        self.space_editor.node_helper.load_kv(self.current_dir)
+        #self.space_editor.node_helper.set_id(args[1].replace(" ", "_"))        
         
     def create_selected(self, *args):
         if self.assets_path.ids.fc.selection:
@@ -459,8 +572,10 @@ class Minimal3dApp(App):
     def create_mesh(self):
         
         g_scale = self.space_editor.node_helper.pos[:]
-        
-        box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, self.current_mesh_path)))
+        name = "object" + str(self.mesh_count)
+        box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, self.current_mesh_path, name)))
+        box.id = name
+        self.mesh_count += 1
         box.meshes = (self.current_mesh_path,)
         self.space_editor.node_helper.unbind_props()
         self.set_mesh(box, self.layout3d.look_at[3:6][:], g_scale)
@@ -591,4 +706,4 @@ class Minimal3dApp(App):
 
     
 if __name__ == '__main__':
-    Minimal3dApp().run()
+    Editor3dApp().run()

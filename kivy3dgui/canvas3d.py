@@ -389,6 +389,7 @@ class Canvas3D(FloatLayout):
         self.canvas['specular_intensity'] = (float(mesh.specular_intensity))
         self.canvas['shadows_bias'] = (float(mesh.shadows_bias))
         self.canvas['alpha'] = (float(mesh.alpha))
+        self.canvas['alpha_threshold'] = (float(mesh.alpha_threshold))
         self.canvas['enabled_shadow'] = (float(mesh.receive_shadows))
      
      
