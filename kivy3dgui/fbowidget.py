@@ -62,13 +62,14 @@ class FboFloatLayout(FloatLayout):
 
         with self.canvas:
             #self.cbs = Callback(self.prepare_canvas)
+           
             self.fbo = Fbo(size=self.size, texture=self.fbo_texture)
-            #Color(1, 1, 1, 0)
-            #self.fbo_rect = Rectangle()
+            #Color(0, 0, 0, 1)
+            #self.fbo_rect = Rectangle(size=self.size)            
 
 
         with self.fbo:
-            ClearColor(0.0, 0.0, 0.0, 0.0)
+            ClearColor(0.0, 0.0, 0.0, 1.0)
             ClearBuffers()
             self.fbo_rect = Rectangle(size=self.size)
 

@@ -239,6 +239,7 @@ class NodeHelper(object):
     def unbind_props(self):
         self.editor_manager.properties.ids.intensity.unbind(value = self.set_intensity)
         self.editor_manager.properties.ids.alpha.unbind(value = self.set_alpha)
+        self.editor_manager.properties.ids.alpha_threshold.unbind(value = self.set_alpha_threshold)
         self.editor_manager.properties.ids.receive_shadows.unbind(active = self.set_receive_shadows)
         self.editor_manager.properties.ids.cast_shadows.unbind(active = self.set_cast_shadows)
         self.editor_manager.properties.ids.shadows_bias.unbind(value = self.set_shadow_bias)

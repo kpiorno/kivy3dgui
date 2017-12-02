@@ -13,6 +13,7 @@ from kivy.properties import ObjectProperty
 from editor.space_editor import SpaceEditor
 from editor.editor_manager import EditorManager
 from kivy.core.window import Window, Keyboard
+from editor.my_paint_widget import MyPaintWidget
 
 class Editor3dApp(App):
     editor_manager = ObjectProperty(None, allownone=True)
@@ -94,10 +95,24 @@ class Editor3dApp(App):
                             pos_hint: {"x": 0.90, "y": 0}
                             size_hint: (0.1, 0.1)
                             
-                            text: "Remove"                            
-
-                                        
-                                        
+                            text: "Remove"     
+                        
+                        BoxLayout:    
+                            pos_hint: {"x": 0.85, "y": 0.1}
+                            size_hint: (0.14, 0.05) 
+                            canvas:
+                                Color:
+                                    rgb: 0.5, 0.5, 0.5, 1.0
+                                Rectangle:
+                                    size: self.size
+                                    pos: self.pos                             
+                            Label:
+                                text: "Lock Camera"
+                            CheckBox:
+                                id: lock_camera
+                                active: False
+                                #on_active: self.lock_camera(*args)
+                                       
                                         
                     '''))
                     
@@ -447,8 +462,8 @@ class Editor3dApp(App):
         
         layout3d.bind(on_motion=self.on_motion)        
         
-        #keyboard = Window.request_keyboard(self._keyboard_released, self)
-        #keyboard.bind(on_key_down=self._keyboard_on_key_down, on_key_up=self._keyboard_released)
+        keyboard = Window.request_keyboard(self._keyboard_released, self)
+        keyboard.bind(on_key_down=self._keyboard_on_key_down, on_key_up=self._keyboard_released)
         
         float_layaout = FloatLayout()
         grid = GridLayout(cols=2)
@@ -500,7 +515,7 @@ class Editor3dApp(App):
         self.current_mesh_path = "./meshes/box.obj"
         self.create_mesh()        
         
-    def _keyboard_released(self, window, keycode):
+    def _keyboard_released(self, *args):
         self.super = []
 
     def _keyboard_on_key_down(self, window, keycode, text, super):
@@ -574,6 +589,9 @@ class Editor3dApp(App):
         g_scale = self.space_editor.node_helper.pos[:]
         name = "object" + str(self.mesh_count)
         box = Builder.load_string(dedent(self.box_str.format(0, 0, 0, 0, self.current_mesh_path, name)))
+
+        paint = MyPaintWidget()
+        box.add_widget(paint)
         box.id = name
         self.mesh_count += 1
         box.meshes = (self.current_mesh_path,)
@@ -687,7 +705,8 @@ class Editor3dApp(App):
       
         
     def on_touch_move(self, widget, touch):
-        if not self.move_camera or touch.sx > 0.8:
+        if self.layout3d.ids.lock_camera.active or not self.move_camera or touch.sx > 0.8:
+            return not self.move_camera
             return True
         polar_angle = (touch.dy / self.layout3d.height) * 360        
         azimuth_angle = (touch.dx / self.layout3d.width) * -360
