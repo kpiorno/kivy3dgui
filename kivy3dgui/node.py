@@ -177,6 +177,7 @@ def load_ogre(filename):
 
 
 class Node(Widget):
+    name = StringProperty("None")
     scale = ListProperty([1., 1., 1.])
     rotate = ListProperty([1., 0., 1., 0.])
     pitch = NumericProperty(0.)
@@ -203,6 +204,7 @@ class Node(Widget):
     axis_type = NumericProperty(0)
     
     shadows_bias = NumericProperty(0.01)
+    meta_value = NumericProperty(1)
     
     light_intensity = [1.0, 1.0, 1.0, 1.0]
     old_transformation = [1.0, 0.0, 0.0, 1300.0, True]
@@ -216,6 +218,7 @@ class Node(Widget):
     _translate = None
     _rotate = None
     _scale = None
+    
     vertices = []
     mesh = 0
     objs = ListProperty([])
@@ -231,6 +234,7 @@ class Node(Widget):
     current_anim_index = 0
 
     def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "Default")
         self.translate = kwargs.get("translate", (0., 0., 0.))
         self.rotate = kwargs.get("rotate", (0., 0., 1., 0.))
         self.pitch = kwargs.get("pitch", 0.)
@@ -252,6 +256,8 @@ class Node(Widget):
         self.alpha = kwargs.get("alpha", 1.0)
         self.alpha_threshold = kwargs.get("alpha_threshold", 1.0)
         self.shadows_bias = kwargs.get("shadows_bias", 0.01)
+        self.meta_value = kwargs.get("meta_value", 1)
+        
         self.objs = []
 
         if '__no_builder' in kwargs:
@@ -261,7 +267,6 @@ class Node(Widget):
         self.fbo_widget = FboFloatLayout(size=(800, 600), size_hint=(None, None),
                                          clear_color=(0, 0, 0, 1.0))
         #self.fbo_widget.texture_size = self.texture_size
-
         super(Node, self).__init__(**kwargs)
 
     def get_pos(self):
@@ -624,7 +629,31 @@ class Node(Widget):
 
         self._instructions.append(Callback(self.after_render))
         self.init += 1
-        
+    def get_properties(self):
+        r_dict = {
+            "id": self.id,   
+            "name": self.name,                 
+            "translate": self.translate,
+            "rotate": self.rotate,
+            "pitch": self.pitch,
+            "yaw": self.yaw,
+            "roll": self.roll,
+            "scale": self.scale,
+            "meshes": self.meshes,
+            "anims": self._anims,
+            "effect": self.effect,
+            "current_anim_index": self.current_anim_index,
+            "axis_type": self.axis_type,
+            "light_intensity": self.light_intensity,
+            "min_light_intensity": self.min_light_intensity,
+            "specular_intensity": self.specular_intensity,
+            "specular_power": self.specular_power,
+            "normal_map": self.normal_map,
+            "alpha": self.alpha,
+            "alpha_threshold": self.alpha_threshold,
+            "shadows_bias": self.shadows_bias
+        }
+        return r_dict        
 
     def remove_a(self):
         if self.fbo_widget:

@@ -46,76 +46,78 @@ class Editor3dApp(App):
         self.rad = rad
         self.azimuth = azimuth
         self.polar = polar
-        
-        layout3d = Builder.load_string(dedent('''
-                    #:kivy 1.0
-                    #: import Layout3D kivy3dgui.layout3d
-                    #: import Animation kivy.animation.Animation
-                    Layout3D:
-                        id: board3d
-                        look_at: [0, 0, 10, 0, 0, -20, 0, 1, 0]
-                        canvas_size: (1920, 1080)
-                        shadow_offset: 2
-                        light_position: [-24.5, 150, 100]
-                        shadow_origin: [-4,  1., -20.]
-                        shadow_target: [-4.01, 0., -23.0]
-                        size_hint: 0.8, 1.0
-                        
+        layout3d = None
+        #layout3d = self.editor_manager.load_scene(os.path.join(self.current_dir, "output.kv"), self)  
+        if 1:
 
-                        
-                        shadow_threshold: 0.3 
-                        post_processing: True                        
-                        Node:
-                            id: ____editor_3d_bottom____
-                            rotate: (-90, 1, 0, 0)
-                            scale: (1.0, 0.8, 0.1)
-                            translate: (0, -10, -15)
-                            min_light_intensity: 0.5
-                            receive_shadows: True                            
-                            meshes: ("./meshes/2dbox.obj",)
-                            # Button:
-                                # id: bottom_floor
-                                # text: "Create a Box"
-                            FloatLayout:    
+            layout3d = Builder.load_string(dedent('''
+                        #:kivy 1.0
+                        #: import Layout3D kivy3dgui.layout3d
+                        #: import Animation kivy.animation.Animation
+                        Layout3D:
+                            id: board3d
+                            look_at: [0, 0, 10, 0, 0, -20, 0, 1, 0]
+                            canvas_size: (1920, 1080)
+                            shadow_offset: 2
+                            light_position: [-24.5, 150, 100]
+                            shadow_origin: [-4,  1., -20.]
+                            shadow_target: [-4.01, 0., -23.0]
+                            size_hint: 0.8, 1.0
+
+                            shadow_threshold: 0.3 
+                            post_processing: True                        
+                            Node:
+                                id: ____editor_3d_bottom____
+                                rotate: (-90, 1, 0, 0)
+                                scale: (1.0, 0.8, 0.1)
+                                translate: (0, -10, -15)
+                                min_light_intensity: 0.5
+                                receive_shadows: True          
+                                meta_value: -1                                
+                                meshes: ["./meshes/2dbox.obj",]
+                                # Button:
+                                    # id: bottom_floor
+                                    # text: "Create a Box"
+                                FloatLayout:    
+                                    canvas:
+                                        Color:
+                                            rgb: 0.5, 0.5, 0.5, 1.0
+                                        Rectangle:
+                                            size: self.size
+                                            pos: self.pos       
+     
+                            Button:
+                                id: undo
+                                size_hint: (0.1, 0.1)
+                                pos_hint: {"x": 0.80, "y": 0}
+                                text: "Undo"
+                                
+                            Button:
+                                id: delete
+                                pos_hint: {"x": 0.90, "y": 0}
+                                size_hint: (0.1, 0.1)
+                                
+                                text: "Remove"     
+                            
+                            BoxLayout:    
+                                pos_hint: {"x": 0.85, "y": 0.1}
+                                size_hint: (0.14, 0.05) 
                                 canvas:
                                     Color:
                                         rgb: 0.5, 0.5, 0.5, 1.0
                                     Rectangle:
                                         size: self.size
-                                        pos: self.pos       
- 
-                        Button:
-                            id: undo
-                            size_hint: (0.1, 0.1)
-                            pos_hint: {"x": 0.80, "y": 0}
-                            text: "Undo"
-                            
-                        Button:
-                            id: delete
-                            pos_hint: {"x": 0.90, "y": 0}
-                            size_hint: (0.1, 0.1)
-                            
-                            text: "Remove"     
-                        
-                        BoxLayout:    
-                            pos_hint: {"x": 0.85, "y": 0.1}
-                            size_hint: (0.14, 0.05) 
-                            canvas:
-                                Color:
-                                    rgb: 0.5, 0.5, 0.5, 1.0
-                                Rectangle:
-                                    size: self.size
-                                    pos: self.pos                             
-                            Label:
-                                text: "Lock Camera"
-                            CheckBox:
-                                id: lock_camera
-                                active: False
-                                #on_active: self.lock_camera(*args)
-                                       
-                                        
-                    '''))
-                    
+                                        pos: self.pos                             
+                                Label:
+                                    text: "Lock Camera"
+                                CheckBox:
+                                    id: lock_camera
+                                    active: False
+                                    #on_active: self.lock_camera(*args)
+                                           
+                                            
+                        '''))
+                 
         self.box_str = '''
             Node:
                 id: {5}
@@ -452,7 +454,8 @@ class Editor3dApp(App):
         self.save_dialog = Builder.load_string(save_dialog)
         
         layout3d.bind(on_touch_move = self.on_touch_move)
-      
+        layout3d.bind(on_motion=self.on_motion)   
+        
         layout3d.ids.undo.bind(on_touch_up = self.undo)
         layout3d.ids.delete.bind(on_touch_up = self.remove)
         
@@ -460,7 +463,7 @@ class Editor3dApp(App):
         self.layout3d.f_type = 0
         self.space_editor = SpaceEditor(layout3d, self, self.editor_manager)
         
-        layout3d.bind(on_motion=self.on_motion)        
+     
         
         keyboard = Window.request_keyboard(self._keyboard_released, self)
         keyboard.bind(on_key_down=self._keyboard_on_key_down, on_key_up=self._keyboard_released)
@@ -489,6 +492,7 @@ class Editor3dApp(App):
         #return layout3d
         
     def save_scene(self, *args):
+        self.editor_manager.export_scene("")
         if not self.data[0]:
             self.save_dialog.pos_hint = {"x": 0, "y": 0}
         

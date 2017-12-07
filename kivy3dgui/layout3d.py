@@ -307,6 +307,9 @@ class Layout3D(FloatLayout):
         else:
             ret = super(Layout3D, self).add_widget(*largs)
             return ret
+            
+    def get_nodes(self):
+        return self.canvas3d.nodes
 
     def remove_widget(self, widget):
         if isinstance(widget, Node):

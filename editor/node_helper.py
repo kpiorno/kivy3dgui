@@ -208,7 +208,8 @@ class NodeHelper(object):
             
     def set_id (self, name):
         if self.current_mesh:
-            self.current_mesh.id = name            
+            self.current_mesh.id = name    
+            self.current_mesh.name = name            
             
     def bind_props(self):
         self.editor_manager.properties.ids.intensity.bind(value = self.set_intensity)

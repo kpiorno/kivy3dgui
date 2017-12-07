@@ -41,6 +41,7 @@ class SpaceEditor:
             node.ids.c_button.bind(on_touch_move=parent.on_button_touch_move)
             node.ids.c_button.c_id = i
             layout.add_widget(node)
+            node.meta_value = -1
             self.node_helper.add_mesh(node)
             
     def free(self):
