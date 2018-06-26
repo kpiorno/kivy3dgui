@@ -6,8 +6,8 @@ If you want to help with the development you can mail me: karel.piorno@nauta.cu
 
 It's easy to test, just download the code a run the examples. Enjoy it!!!
 
-You can watch a video example [here](https://vimeo.com/127000600).
-Another [video](https://vimeo.com/194306331) for Tour3D Example.
+You can watch a video example [here](https://www.youtube.com/watch?v=V3lhi2OGz0U).
+Another [video](https://www.youtube.com/watch?v=rpZFwcV-H0A) for Tour3D Example.
 ### Work in progress
 The 3D Editor is in the early stage. Baby steps, many issues :) anyway, you can test it at ```editor_3d``` branch.
 
