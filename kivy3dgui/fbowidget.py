@@ -85,7 +85,13 @@ class FboFloatLayout(FloatLayout):
         # wait that all the instructions are in the canvas to set texture
 
         self.texture = self.fbo.texture
-        super(FboFloatLayout, self).__init__(**kwargs)
+        try:
+            self.size = kwargs.pop("size")
+            self.size_hint = kwargs.pop("size_hint")
+            self.clear_color = kwargs.pop("clear_color")
+            super(FboFloatLayout, self).__init__(**kwargs)
+        except:
+            print(kwargs)  
 
     def prepare_canvas(self, *args):
         glEnable(GL_BLEND)
