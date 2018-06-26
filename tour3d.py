@@ -11,7 +11,12 @@ from kivy3dgui.layout3d import Node
 
 class Note(Scatter):
     def __init__(self, **kwargs):
-        super(Note, self).__init__(**kwargs)
+        wpos = self.pos = kwargs.pop("pos")
+        try:
+            self.create_image = kwargs.pop("create_image")
+            super(Note, self).__init__(**kwargs)
+        except:
+            print(kwargs)         
         self.opacity = 0
         #Show
         anim = Animation(opacity=1.0, duration=0.3)
@@ -36,7 +41,7 @@ class Note(Scatter):
         image.size = (120, 120)
         text_editor.pos = (0, 10)
         close.pos = (100, 100)
-        self.pos = kwargs.get('pos', (100, 400))
+        self.pos = wpos
 
         close.bind(on_release=self.close_request)
         

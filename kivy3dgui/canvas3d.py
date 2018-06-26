@@ -223,7 +223,16 @@ class Canvas3D(FloatLayout):
         if self.picking:
             self.init_picking()
         self.init_motion_blur()
-        super(Canvas3D, self).__init__(**kwargs)
+        try:
+            self.size_hint = kwargs.pop("size_hint")
+            self.canvas_size = kwargs.pop("canvas_size")
+            self.id = kwargs.pop("id")
+            self.shadow = kwargs.pop("shadow")
+            self.picking = kwargs.pop("picking")
+            super(Canvas3D, self).__init__(**kwargs)
+
+        except:
+            print(kwargs)  
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
 
@@ -384,7 +393,14 @@ class Canvas3D(FloatLayout):
         self.canvas['yaw'] = float(mesh.yaw)
         self.canvas['roll'] = float(mesh.roll)
         self.canvas['mesh_pos'] = mesh.translate[:]
-
+        self.canvas['min_light_intensity'] = (float(mesh.min_light_intensity))
+        self.canvas['specular_power'] = (float(mesh.specular_power))
+        self.canvas['specular_intensity'] = (float(mesh.specular_intensity))
+        self.canvas['shadows_bias'] = (float(mesh.shadows_bias))
+        self.canvas['alpha'] = (float(mesh.alpha))
+        self.canvas['alpha_threshold'] = (float(mesh.alpha_threshold))
+        self.canvas['enabled_shadow'] = (float(mesh.receive_shadows))
+     
      
         #self.canvas['axis_type'] = mesh.axis_type
         
@@ -392,7 +408,7 @@ class Canvas3D(FloatLayout):
         self.fbo['pitch'] = float(mesh.pitch)
         self.fbo['yaw'] = float(mesh.yaw)
         self.fbo['roll'] = float(mesh.roll)
-        
+        self.fbo['cast_shadows'] = (float(mesh.cast_shadows))   
        
         self.fbo['mesh_pos'] = mesh.translate[:]
 

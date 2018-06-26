@@ -62,13 +62,14 @@ class FboFloatLayout(FloatLayout):
 
         with self.canvas:
             #self.cbs = Callback(self.prepare_canvas)
+           
             self.fbo = Fbo(size=self.size, texture=self.fbo_texture)
-            #Color(1, 1, 1, 0)
-            #self.fbo_rect = Rectangle()
+            #Color(0, 0, 0, 1)
+            #self.fbo_rect = Rectangle(size=self.size)            
 
 
         with self.fbo:
-            ClearColor(0.0, 0.0, 0.0, 0.0)
+            ClearColor(0.0, 0.0, 0.0, 1.0)
             ClearBuffers()
             self.fbo_rect = Rectangle(size=self.size)
 
@@ -84,7 +85,13 @@ class FboFloatLayout(FloatLayout):
         # wait that all the instructions are in the canvas to set texture
 
         self.texture = self.fbo.texture
-        super(FboFloatLayout, self).__init__(**kwargs)
+        try:
+            self.size = kwargs.pop("size")
+            self.size_hint = kwargs.pop("size_hint")
+            self.clear_color = kwargs.pop("clear_color")
+            super(FboFloatLayout, self).__init__(**kwargs)
+        except:
+            print(kwargs)  
 
     def prepare_canvas(self, *args):
         glEnable(GL_BLEND)

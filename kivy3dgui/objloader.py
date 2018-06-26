@@ -57,7 +57,7 @@ class ObjFile:
                     n = self.normals[norms[i]-1]
 
                 #get texture coordinate components
-                t = (0.0, 0.0)
+                t = (0.4, 0.4)
                 if tcs[i] != -1:
                     t = self.texcoords[tcs[i]-1]
 

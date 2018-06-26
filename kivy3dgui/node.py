@@ -1,6 +1,9 @@
 __author__ = 'kpiorno'
 import os
+import math
+from textwrap import dedent 
 from xml.dom.minidom import parse
+
 from itertools import *
 from kivy.graphics import *
 from kivy.core.image import Image
@@ -15,8 +18,9 @@ from kivy.graphics.texture import Texture
 from kivy3dgui.fbowidget import FboFloatLayout
 from kivy.base import EventLoop
 from kivy3dgui import canvas3d
+from kivy.lang import Builder
 
-import math
+
 
 
 def normalize(v):
@@ -173,6 +177,7 @@ def load_ogre(filename):
 
 
 class Node(Widget):
+    name = StringProperty("None")
     scale = ListProperty([1., 1., 1.])
     rotate = ListProperty([1., 0., 1., 0.])
     pitch = NumericProperty(0.)
@@ -195,9 +200,11 @@ class Node(Widget):
     always_on_top = BooleanProperty(False)
 
     alpha = NumericProperty(1.0)
+    alpha_threshold = NumericProperty(1.0)
     axis_type = NumericProperty(0)
     
     shadows_bias = NumericProperty(0.01)
+    meta_value = NumericProperty(1)
     
     light_intensity = [1.0, 1.0, 1.0, 1.0]
     old_transformation = [1.0, 0.0, 0.0, 1300.0, True]
@@ -211,6 +218,7 @@ class Node(Widget):
     _translate = None
     _rotate = None
     _scale = None
+    
     vertices = []
     mesh = 0
     objs = ListProperty([])
@@ -226,6 +234,7 @@ class Node(Widget):
     current_anim_index = 0
 
     def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "Default")
         self.translate = kwargs.get("translate", (0., 0., 0.))
         self.rotate = kwargs.get("rotate", (0., 0., 1., 0.))
         self.pitch = kwargs.get("pitch", 0.)
@@ -239,10 +248,16 @@ class Node(Widget):
         self.current_anim_index = kwargs.get("current_anim_index", 0)
         self.axis_type = kwargs.get("axis_type", 0)
         self.light_intensity = kwargs.get("light_intensity", [1.0, 1.0, 1.0, 1.0])
+        self.min_light_intensity = kwargs.get("min_light_intensity", 0.0)
+        self.specular_intensity = kwargs.get("specular_intensity", 0.0)
+        self.specular_power = kwargs.get("specular_power", 0.0)
         self.normal_map = kwargs.get("normal_map", "")
         self._normal_map = kwargs.get("normal_map", "")
         self.alpha = kwargs.get("alpha", 1.0)
+        self.alpha_threshold = kwargs.get("alpha_threshold", 1.0)
         self.shadows_bias = kwargs.get("shadows_bias", 0.01)
+        self.meta_value = kwargs.get("meta_value", 1)
+        
         self.objs = []
 
         if '__no_builder' in kwargs:
@@ -252,7 +267,6 @@ class Node(Widget):
         self.fbo_widget = FboFloatLayout(size=(800, 600), size_hint=(None, None),
                                          clear_color=(0, 0, 0, 1.0))
         #self.fbo_widget.texture_size = self.texture_size
-
         super(Node, self).__init__(**kwargs)
 
     def get_pos(self):
@@ -266,6 +280,14 @@ class Node(Widget):
     def on_alpha_blending(self, widget, value):
         if self.fbo_widget is not None:
             self.fbo_widget.alpha_blending = self.alpha_blending
+            
+    def load_kv_file(self, file_path):
+        for e in self.fbo_widget.children:
+            self.fbo_widget.remove_widget(e)
+            
+        if os.path.isfile(file_path):
+            res = Builder.load_file(file_path)
+            self.add_widget(res)
             
     def on_meshes(self, widget, value):
         if self.init == -1:
@@ -347,16 +369,17 @@ class Node(Widget):
         if len(self._normal_map) > 0 and self._instruction_group:
             image = Image(value)
             bind_texture = BindTexture(texture=image.texture, index=2)
-            state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
+            state = ChangeState(#enabled_shadow=(float(self.receive_shadows)),
                                 lighting=(float(self.lighting)),
                                 light_intensity=self.light_intensity,
                                 flip_coords=(float(self.flip_coords)),
-                                alpha=(float(self.alpha)),
-                                shadows_bias=(shadows_bias(self.alpha)),
+                                #alpha=(float(self.alpha)),
+                                #shadows_bias=(shadows_bias(self.alpha)),
                                 normal_map_enabled=(float(1)),
-                                specular_intensity=(float(self.specular_intensity)),
-                                specular_power=(float(self.specular_power)),
-                                min_light_intensity=(float(self.min_light_intensity)))
+                                #specular_intensity=(float(self.specular_intensity)),
+                                #specular_power=(float(self.specular_power)),
+                                #min_light_intensity=(float(self.min_light_intensity))"""
+                                )
 
 
             self._instruction_group.remove(self.state)
@@ -413,19 +436,20 @@ class Node(Widget):
             
             self._instruction_group.add(Callback(self.update_params))  
             
-            self.state = ChangeState(enabled_shadow=(float(self.receive_shadows)),
+            self.state = ChangeState(#enabled_shadow=(float(self.receive_shadows)),
                                      lighting=(float(self.lighting)),
                                      light_intensity=self.light_intensity,
                                      flip_coords=(float(self.flip_coords)),
-                                     alpha=(float(self.alpha)),
+                                     #alpha=(float(self.alpha)),
                                      #pitch=(float(self.pitch)),
                                      #yaw=self.yaw,
                                      #roll=(float(self.roll)),
-                                     shadows_bias = (float(self.shadows_bias)),
+                                     #shadows_bias = (float(self.shadows_bias)),
                                      normal_map_enabled=(float(normal_map_value)),
-                                     specular_intensity = (float(self.specular_intensity)),
-                                     specular_power = (float(self.specular_power)),
-                                     min_light_intensity=(float(self.min_light_intensity)))
+                                     #specular_intensity = (float(self.specular_intensity)),
+                                     #specular_power = (float(self.specular_power)),
+                                     #min_light_intensity=(float(self.min_light_intensity))
+                                     )
 
         
 
@@ -448,14 +472,14 @@ class Node(Widget):
         elif self.init == 1:
             self.current_callback_fbo = current_callback
             self._shadow_instructions.append(Callback(self.update_params_fbo)) 
-            state = ChangeState(cast_shadows=(float(self.cast_shadows)))
+            #state = ChangeState(cast_shadows=(float(self.cast_shadows)))
                                              
             self._shadow_translate = Translate(*self.translate)
             self._shadow_rotate = Rotate(*self.rotate)
             #self._scale = Scale(*self.scale)
             
             self._shadow_scale = Scale(*self.scale)
-            self._shadow_instructions.append(state)
+            #self._shadow_instructions.append(state)
             self._shadow_instructions.append(self._shadow_translate)
             self._shadow_instructions.append(self._shadow_rotate)
             
@@ -605,7 +629,31 @@ class Node(Widget):
 
         self._instructions.append(Callback(self.after_render))
         self.init += 1
-        
+    def get_properties(self):
+        r_dict = {
+            "id": self.id,   
+            "name": self.name,                 
+            "translate": self.translate,
+            "rotate": self.rotate,
+            "pitch": self.pitch,
+            "yaw": self.yaw,
+            "roll": self.roll,
+            "scale": self.scale,
+            "meshes": self.meshes,
+            "anims": self._anims,
+            "effect": self.effect,
+            "current_anim_index": self.current_anim_index,
+            "axis_type": self.axis_type,
+            "light_intensity": self.light_intensity,
+            "min_light_intensity": self.min_light_intensity,
+            "specular_intensity": self.specular_intensity,
+            "specular_power": self.specular_power,
+            "normal_map": self.normal_map,
+            "alpha": self.alpha,
+            "alpha_threshold": self.alpha_threshold,
+            "shadows_bias": self.shadows_bias
+        }
+        return r_dict        
 
     def remove_a(self):
         if self.fbo_widget:

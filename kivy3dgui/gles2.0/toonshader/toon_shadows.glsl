@@ -216,6 +216,7 @@ varying mat4 modelview_mat_frag;
 varying mat4 normal_mat_frag;
 
 uniform float alpha;
+uniform float alpha_threshold;
 uniform float shadows_bias;
 uniform float enabled_shadow;
 uniform float min_light_intensity;
@@ -298,6 +299,7 @@ void main (void){
     bias = clamp(bias, 0.,shadows_bias);*/
 
     float visibility = 1.1;
+    if (ShadowCoord.x >= 0.0 && ShadowCoord.y >= 0.0 &&  ShadowCoord.x <= 1.0 && ShadowCoord.y <= 1.0)
     for (int i=0;i<4;i++){
       if ( texture2D( texture1, ShadowCoord.xy + poissonDisk[i]/700.0).z <  ShadowCoord.z-shadows_bias  ){
             visibility-=0.1;
@@ -365,7 +367,10 @@ void main (void){
 
 
     f_color = vec4((color1).xyz*visibility*diffuse, res_alpha) + SpecularColor;
-    f_color.a = alpha;
+    if (color1.r <= alpha_threshold && color1.g <= alpha_threshold && color1.b <= alpha_threshold)
+        f_color.a = alpha;
+    else    
+        f_color.a = 1.0;
     f_color += ambient_light;
     gl_FragColor = f_color;
 
