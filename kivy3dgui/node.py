@@ -525,84 +525,86 @@ class Node(Widget):
                 if not filename:
                     raise IOError("File: '{0}' not found".format(e))
                 m = ObjFile(resource_find(e))
-                m = list(m.objects.values())[0]
-                res = []
-                count = 0
-                for i, o in enumerate(m.vertices):
-                    res.append(o)
-                    if (i + 1) % 8 == 0:
-                        count += 1
-                        res.append(0.0)
-                        res.append(0.0)
-                        res.append(0.0)
+                for mesh in list(m.objects.values()):
+                    m = mesh
+                    res = []
+                    count = 0
+                    for i, o in enumerate(m.vertices):
+                        res.append(o)
+                        if (i + 1) % 8 == 0:
+                            count += 1
+                            res.append(0.0)
+                            res.append(0.0)
+                            res.append(0.0)
 
-                        res.append(i // 8)
-                        res.append(i // 8)
+                            res.append(i // 8)
+                            res.append(i // 8)
 
-                        if count >= 3:
-                            l = len(res)
-                            v0 = [res[l - 13 * 3], res[l - 13 * 3 + 1], res[l - 13 * 3 + 2]]
-                            v1 = [res[l - 13 * 2], res[l - 13 * 2 + 1], res[l - 13 * 2 + 2]]
-                            v2 = [res[l - 13 * 1], res[l - 13 * 1 + 1], res[l - 13 * 1 + 2]]
+                            if count >= 3:
+                                l = len(res)
+                                v0 = [res[l - 13 * 3], res[l - 13 * 3 + 1], res[l - 13 * 3 + 2]]
+                                v1 = [res[l - 13 * 2], res[l - 13 * 2 + 1], res[l - 13 * 2 + 2]]
+                                v2 = [res[l - 13 * 1], res[l - 13 * 1 + 1], res[l - 13 * 1 + 2]]
 
-                            t0xy = [res[l - 13 * 3 + 6], res[l - 13 * 3 + 7]]
-                            t1xy = [res[l - 13 * 2 + 6], res[l - 13 * 2 + 7]]
-                            t2xy = [res[l - 13 + 6], res[l - 13 + 7]]
+                                t0xy = [res[l - 13 * 3 + 6], res[l - 13 * 3 + 7]]
+                                t1xy = [res[l - 13 * 2 + 6], res[l - 13 * 2 + 7]]
+                                t2xy = [res[l - 13 + 6], res[l - 13 + 7]]
 
-                            edge1 = min_vector(v1, v0)
-                            edge2 = min_vector(v2, v0)
+                                edge1 = min_vector(v1, v0)
+                                edge2 = min_vector(v2, v0)
 
-                            delta_u1 = t1xy[0] - t0xy[0]
-                            delta_v1 = t1xy[1] - t0xy[1]
+                                delta_u1 = t1xy[0] - t0xy[0]
+                                delta_v1 = t1xy[1] - t0xy[1]
 
-                            delta_u2 = t2xy[0] - t0xy[0]
-                            delta_v2 = t2xy[1] - t0xy[1]
+                                delta_u2 = t2xy[0] - t0xy[0]
+                                delta_v2 = t2xy[1] - t0xy[1]
 
-                            d = (delta_u1 * delta_v2 - delta_u2 * delta_v1)
-                            if d == 0:
-                                d = 0.01
-                            f = 1.0 / d;
+                                d = (delta_u1 * delta_v2 - delta_u2 * delta_v1)
+                                if d == 0:
+                                    d = 0.01
+                                f = 1.0 / d;
 
-                            tangent_x = f * (delta_v2 * edge1[0] - delta_v1 * edge2[0])
-                            tangent_y = f * (delta_v2 * edge1[1] - delta_v1 * edge2[1])
-                            tangent_z = f * (delta_v2 * edge1[2] - delta_v1 * edge2[2])
+                                tangent_x = f * (delta_v2 * edge1[0] - delta_v1 * edge2[0])
+                                tangent_y = f * (delta_v2 * edge1[1] - delta_v1 * edge2[1])
+                                tangent_z = f * (delta_v2 * edge1[2] - delta_v1 * edge2[2])
 
-                            for _i in range(1, 4):
-                                res[l - 13 * _i + 8] += tangent_x
-                                res[l - 13 * _i + 9] += tangent_y
-                                res[l - 13 * _i + 10] += tangent_z
+                                for _i in range(1, 4):
+                                    res[l - 13 * _i + 8] += tangent_x
+                                    res[l - 13 * _i + 9] += tangent_y
+                                    res[l - 13 * _i + 10] += tangent_z
 
-                            count = 0
+                                count = 0
 
-                for i in range(len(res)):
-                    if (i + 1) % 13 == 0:
-                        vec = [res[i - 12 + 8], res[i - 12 + 9], res[i - 12 + 10]]
-                        n_vec = normalize(vec)
-                        res[i - 12 + 8] = n_vec[0]
-                        res[i - 12 + 9] = n_vec[1]
-                        res[i - 12 + 10] = n_vec[2]
+                    for i in range(len(res)):
+                        if (i + 1) % 13 == 0:
+                            vec = [res[i - 12 + 8], res[i - 12 + 9], res[i - 12 + 10]]
+                            n_vec = normalize(vec)
+                            res[i - 12 + 8] = n_vec[0]
+                            res[i - 12 + 9] = n_vec[1]
+                            res[i - 12 + 10] = n_vec[2]
 
-                m.vertices = res
-                _vertices = m.vertices
-                _indices = m.indices
-                if self.init != 3:
-                    mesh = Mesh(
-                        vertices=_vertices,
-                        indices=_indices,
-                        fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
-                             (b'tangent', 3, 'float'), (b'vert_pos', 2, 'float')],
-                        mode='triangles',
-                        source=e + ".png",
-                    )
-                    self.objs.append(mesh)
-                    if self.init == 0:
-                        self._instructions.append(mesh)
-                    if self.init == 1:
-                        self._shadow_instructions.append(mesh)
-                    if self.init == 2:
-                        self._picking_instructions.append(mesh)
-                    if self.init == 3:
-                        self._blur_instructions.append(mesh)
+                    m.vertices = res
+                    _vertices = m.vertices
+                    _indices = m.indices
+                    if self.init != 3:
+                        mesh = Mesh(
+                            vertices=_vertices,
+                            indices=_indices,
+                            fmt=[(b'v_pos', 3, 'float'), (b'v_normal', 3, 'float'), (b'v_tc0', 2, 'float'),
+                                (b'tangent', 3, 'float'), (b'vert_pos', 2, 'float')],
+                            mode='triangles',
+                            source=e + ".png",
+                        )
+                        self.objs.append(mesh)
+                        if self.init == 0:
+                            
+                            self._instructions.append(mesh)
+                        if self.init == 1:
+                            self._shadow_instructions.append(mesh)
+                        if self.init == 2:
+                            self._picking_instructions.append(mesh)
+                        if self.init == 3:
+                            self._blur_instructions.append(mesh)
 
             if (".dae" in e) or ('.xml' in e and not ".mesh.xml" in e):
                 raise Exception("Collada not yet implemented")
