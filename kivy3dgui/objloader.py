@@ -53,6 +53,12 @@ class ObjFile:
             norms = f[1]
             tcs = f[2]
             material_ = list(map(float, f[3]))
+            
+            if len(mesh[cont_mesh].indices) == 65535:
+                mesh.append(MeshData())
+                cont_mesh+=1   
+                idx=0 
+            
             for i in range(3):
                 #get normal components
                 n = (0.0, 0.0, 0.0)
@@ -71,10 +77,7 @@ class ObjFile:
                 mesh[cont_mesh].vertices.extend(data)
 
             
-            if len(mesh[cont_mesh].indices) == 65535:
-                mesh.append(MeshData())
-                cont_mesh+=1   
-                idx=0     
+                
             tri = [idx, idx+1, idx+2]       
             mesh[cont_mesh].indices.extend(tri)
             idx += 3
