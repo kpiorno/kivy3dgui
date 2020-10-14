@@ -1,4 +1,5 @@
 from kivy.logger import Logger
+import os
 
 
 class MeshData(object):
@@ -44,12 +45,14 @@ class ObjFile:
         if self._current_object == None:
             return
 
-        mesh = MeshData()
+        mesh = [MeshData()]
+        cont_mesh=0
         idx = 0
         for f in self.faces:
             verts =  f[0]
             norms = f[1]
             tcs = f[2]
+            material_ = list(map(float, f[3]))
             for i in range(3):
                 #get normal components
                 n = (0.0, 0.0, 0.0)
@@ -64,11 +67,16 @@ class ObjFile:
                 #get vertex components
                 v = self.vertices[verts[i]-1]
 
-                data = [v[0], v[1], v[2], n[0], n[1], n[2], t[0], t[1]]
-                mesh.vertices.extend(data)
+                data = [v[0], v[1], v[2], n[0], n[1], n[2], t[0], t[1], material_[0], material_[1], material_[2]]
+                mesh[cont_mesh].vertices.extend(data)
 
-            tri = [idx, idx+1, idx+2]
-            mesh.indices.extend(tri)
+            
+            if len(mesh[cont_mesh].indices) == 65535:
+                mesh.append(MeshData())
+                cont_mesh+=1   
+                idx=0     
+            tri = [idx, idx+1, idx+2]       
+            mesh[cont_mesh].indices.extend(tri)
             idx += 3
 
         self.objects[self._current_object] = mesh
@@ -95,10 +103,10 @@ class ObjFile:
             if values[0] == 'o':
                 self.finish_object()
                 self._current_object = values[1]
-            #elif values[0] == 'mtllib':
-            #    self.mtl = MTL(values[1])
-            #elif values[0] in ('usemtl', 'usemat'):
-            #    material = values[1]
+            elif values[0] == 'mtllib':
+                self.mtl = MTL(values[1])
+            elif values[0] in ('usemtl', 'usemat'):
+                material = values[1]
             if values[0] == 'v':
                 v = list(map(float, values[1:4]))
                 if swapyz:
@@ -126,14 +134,15 @@ class ObjFile:
                         norms.append(int(w[2]))
                     else:
                         norms.append(-1)
-                self.faces.append((face, norms, texcoords, material))
+                self.faces.append((face, norms, texcoords, self.mtl[material]["Kd"] if self.mtl!=None else [1., 1., 1.]))
         self.finish_object()
 
 
 def MTL(filename):
     contents = {}
     mtl = None
-    return
+    if not os.path.exists(filename):
+        return
     for line in open(filename, "r"):
         if line.startswith('#'): continue
         values = line.split()
