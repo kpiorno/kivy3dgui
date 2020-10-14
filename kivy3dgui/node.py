@@ -358,7 +358,7 @@ class Node(Widget):
                 else:
                     self.fbo_widget.fbo.size = self.texture_size
                     #self.fbo_widget.fbo.size = (512, 512)
-                obj.texture = self.fbo_widget.fbo.texture
+                list(obj.values())[0].texture = self.fbo_widget.fbo.texture
                 with self.fbo_widget.fbo:
                     ClearColor(1, 1, 1, 1)
         self.flip_coords = False
