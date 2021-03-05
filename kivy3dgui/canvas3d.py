@@ -17,7 +17,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+import os
 import copy
+import logging
 from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
@@ -40,6 +42,18 @@ label = Label(pos_hint={"x": 0.0, "y": 0.0},
 label_debug = Label(pos_hint={"x": 0.2, "y": 0.2},
                     size_hint=(0.2, 0.2))
 
+_THIS_MODULE_PATH = os.path.dirname(__file__)
+
+def gles20_resource_find(rel_path):
+    res = resource_find(rel_path)
+    if res:
+        return res
+    
+    abs_path = os.path.join(_THIS_MODULE_PATH, 'gles2.0', rel_path)
+    res = resource_find(abs_path)
+    if not res:
+        logging.warn('gles2.0 resource {} not found at {}'.format(rel_path, abs_path))
+    return res
 
 class Canvas3D(FloatLayout):
     adding_queue = ListProperty([])
@@ -180,9 +194,9 @@ class Canvas3D(FloatLayout):
         self.canvas.texture.mag_filter = 'linear'
         self.canvas.texture.min_filter = 'linear'
 
-        # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/simple_no_light.glsl')
-        # self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon.glsl')
-        self.canvas.shader.source = resource_find('./kivy3dgui/gles2.0/toonshader/toon_shadows.glsl')
+        # self.canvas.shader.source = gles20_resource_find('shaders/simple_no_light.glsl')
+        # self.canvas.shader.source = gles20_resource_find('toonshader/toon.glsl')
+        self.canvas.shader.source = gles20_resource_find('toonshader/toon_shadows.glsl')
         self.alpha = 0.0
         self._touches = []
         with self.canvas:
@@ -343,7 +357,7 @@ class Canvas3D(FloatLayout):
                                clear_color=(0.0, 0.0, 0.0, 0.0))
 
 
-        self.picking_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/selection.glsl')
+        self.picking_fbo.shader.source = gles20_resource_find('shaders/selection.glsl')
 
     def create_fbo(self):
         self.fbo = Fbo(size=PICKING_BUFFER_SIZE,
@@ -351,7 +365,7 @@ class Canvas3D(FloatLayout):
                        compute_normal_mat=True,
                        clear_color=(1.0, 1.0, 1.0, 0.0))
 
-        self.fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/shadowpass.glsl')
+        self.fbo.shader.source = gles20_resource_find('shaders/shadowpass.glsl')
 
     def create_motion_blur(self):
         self.motion_blur_fbo = Fbo(size=PICKING_BUFFER_SIZE,
@@ -359,7 +373,7 @@ class Canvas3D(FloatLayout):
                                    compute_normal_mat=True,
                                    clear_color=(1.0, 1.0, 1.0, 0.0))
 
-        self.motion_blur_fbo.shader.source = resource_find('./kivy3dgui/gles2.0/shaders/dop.glsl')
+        self.motion_blur_fbo.shader.source = gles20_resource_find('shaders/dop.glsl')
 
     def init_motion_blur(self):
         with self.motion_blur_fbo:
@@ -708,7 +722,7 @@ class Canvas3D(FloatLayout):
 
     def on_touch_move(self, touch):
         if self.last_widget_str == "NONE":
-           return False
+            return False
 
         x, y = self.get_fixed_points(touch.x, touch.y)
         if x == -1:
@@ -726,10 +740,10 @@ class Canvas3D(FloatLayout):
         if pc[0] != 0:
             float_str = str(round(pc[0], 2))[0:4]
             if float_str != self.last_widget_str:
-               touch.x = self.last_touch_pos[0]
-               touch.y = self.last_touch_pos[1]
-               touch.sx = self.last_touch_pos[2]
-               touch.sy = self.last_touch_pos[3]
+                touch.x = self.last_touch_pos[0]
+                touch.y = self.last_touch_pos[1]
+                touch.sx = self.last_touch_pos[2]
+                touch.sy = self.last_touch_pos[3]
 
             if float(float_str) >= 0.50:
                 float_str = str(round(float(float_str) - 0.50, 2))[0:4]
@@ -778,7 +792,7 @@ class Canvas3D(FloatLayout):
 
     def on_touch_up(self, touch):
         if self.last_widget_str == "NONE":
-           return False
+            return False
 
         x, y = self.get_fixed_points(touch.x, touch.y)
         if x == -1:

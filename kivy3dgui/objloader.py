@@ -93,6 +93,7 @@ class ObjFile:
         self.normals = []
         self.texcoords = []
         self.faces = []
+        self.mtl = None
 
         self._current_object = None
 
@@ -107,7 +108,12 @@ class ObjFile:
                 self.finish_object()
                 self._current_object = values[1]
             elif values[0] == 'mtllib':
-                self.mtl = MTL(values[1])
+                mtl_path = mtl_filename = values[1]
+                if (os.path.isabs(filename) and not os.path.isabs(mtl_filename)) or \
+                   (os.path.dirname(filename) and not os.path.dirname(mtl_filename)):
+                    # if needed, correct the mtl path to be relative or same-dir to/as the object path  
+                    mtl_path = os.path.join(os.path.dirname(filename), mtl_filename)
+                self.mtl = MTL(mtl_path)
             elif values[0] in ('usemtl', 'usemat'):
                 material = values[1]
             if values[0] == 'v':
