@@ -31,6 +31,8 @@ from kivy.graphics import *
 from kivy.core.window import Window
 from kivy.uix.effectwidget import *
 
+DEFAULT_SHADER = "toonshader/toon_shadows.glsl"
+
 # from kivy.graphics.texture import Texture
 class EffectBloom(EffectBase):
     glsl = StringProperty("""
@@ -145,6 +147,8 @@ class Layout3D(FloatLayout):
     effect_widget = ObjectProperty(None, allownone=True)
     '''effect_widget
     '''
+    shader = StringProperty(DEFAULT_SHADER)
+
     def __init__(self, **kwargs):
 
         self.canvas_size = kwargs.get("canvas_size", Window.size)
@@ -170,6 +174,7 @@ class Layout3D(FloatLayout):
         self.bind(light_orientation=self.canvas3d.setter('light_orientation'))
         self.bind(light_0=self.canvas3d.setter('light_0'))
         self.bind(light_1=self.canvas3d.setter('light_1'))
+        self.bind(shader=self.canvas3d.setter('shader'))
 
 
         #self.effect_widget = BlurEffectWidget(mask_effect=self.canvas3d.picking_fbo,

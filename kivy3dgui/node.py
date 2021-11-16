@@ -1,6 +1,7 @@
 __author__ = 'kpiorno'
 import os
 import math
+import kivy
 from textwrap import dedent 
 from xml.dom.minidom import parse
 
@@ -299,8 +300,9 @@ class Node(Widget):
                     self._anims.append(obj)
 
             self._objs = value[:]
-
-            self.parent.add_node(self)
+            # Previous kivy's versions requires it in order avoid weakrefs
+            if kivy.__version__ < '2.0.0':
+                self.parent.add_node(self)
             self._start_objs = True
             if self.init >= 3:
                 self._start_objs = True

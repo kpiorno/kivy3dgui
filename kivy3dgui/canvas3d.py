@@ -36,6 +36,7 @@ from kivy.uix.label import Label
 
 PICKING_BUFFER_SIZE = Window.size
 TRANS_TOUCH_SIZE = Window.size
+DEFAULT_SHADER = "toonshader/toon_shadows.glsl"
 
 label = Label(pos_hint={"x": 0.0, "y": 0.0},
               size_hint=(0.2, 0.2))
@@ -174,9 +175,13 @@ class Canvas3D(FloatLayout):
 
     last_widget_str = StringProperty("")
 
+    shader = StringProperty(DEFAULT_SHADER)
+
+
     def __init__(self, **kwargs):
         self.shadow = kwargs.get("shadow", False)
         self.canvas_size = 1366, 768
+        self.shader = kwargs.get("shader", DEFAULT_SHADER)
 
         global PICKING_BUFFER_SIZE
         PICKING_BUFFER_SIZE = kwargs.get("canvas_size", Window.size)
@@ -184,7 +189,6 @@ class Canvas3D(FloatLayout):
         self.picking = True
         self.fbo_list = {}
         self.co = self.canvas
-        #self.canvas = RenderContext(compute_normal_mat=False)
 
         self.canvas = Fbo(size=self.canvas_size,
                        with_depthbuffer=True,
@@ -194,9 +198,7 @@ class Canvas3D(FloatLayout):
         self.canvas.texture.mag_filter = 'linear'
         self.canvas.texture.min_filter = 'linear'
 
-        # self.canvas.shader.source = gles20_resource_find('shaders/simple_no_light.glsl')
-        # self.canvas.shader.source = gles20_resource_find('toonshader/toon.glsl')
-        self.canvas.shader.source = gles20_resource_find('toonshader/toon_shadows.glsl')
+        self.canvas.shader.source = gles20_resource_find(self.shader)
         self.alpha = 0.0
         self._touches = []
         with self.canvas:
@@ -249,6 +251,10 @@ class Canvas3D(FloatLayout):
             print(kwargs)  
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
+        self.bind(shader=self.on_shader)
+
+    def on_shader(self, widget, value):
+        self.canvas.shader.source = gles20_resource_find(self.shader)
 
     def on_picking_scale(self, *args):
         self.MPICKING_BUFFER_SIZE = [PICKING_BUFFER_SIZE[0] * self.picking_scale,
