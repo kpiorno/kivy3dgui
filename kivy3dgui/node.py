@@ -301,7 +301,7 @@ class Node(Widget):
 
             self._objs = value[:]
             # Previous kivy's versions requires it in order avoid weakrefs
-            if kivy.__version__ < '2.0.0':
+            if kivy.__version__ < '1.10.0':
                 self.parent.add_node(self)
             self._start_objs = True
             if self.init >= 3:
