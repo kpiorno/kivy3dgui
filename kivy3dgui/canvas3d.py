@@ -49,7 +49,7 @@ def gles20_resource_find(rel_path):
     res = resource_find(rel_path)
     if res:
         return res
-    
+
     abs_path = os.path.join(_THIS_MODULE_PATH, 'gles2.0', rel_path)
     res = resource_find(abs_path)
     if not res:
@@ -248,7 +248,7 @@ class Canvas3D(FloatLayout):
             super(Canvas3D, self).__init__(**kwargs)
 
         except:
-            print(kwargs)  
+            print(kwargs)
         self.nt = Clock.schedule_interval(self.update_glsl, 1 / 60.)
         self._touches = {}
         self.bind(shader=self.on_shader)
@@ -420,16 +420,16 @@ class Canvas3D(FloatLayout):
         self.canvas['alpha'] = (float(mesh.alpha))
         self.canvas['alpha_threshold'] = (float(mesh.alpha_threshold))
         self.canvas['enabled_shadow'] = (float(mesh.receive_shadows))
-     
-     
+
+
         #self.canvas['axis_type'] = mesh.axis_type
-        
+
     def change_params_fbo(self, mesh):
         self.fbo['pitch'] = float(mesh.pitch)
         self.fbo['yaw'] = float(mesh.yaw)
         self.fbo['roll'] = float(mesh.roll)
-        self.fbo['cast_shadows'] = (float(mesh.cast_shadows))   
-       
+        self.fbo['cast_shadows'] = (float(mesh.cast_shadows))
+
         self.fbo['mesh_pos'] = mesh.translate[:]
 
     def change_params_picking_fbo(self, mesh):
@@ -441,8 +441,8 @@ class Canvas3D(FloatLayout):
     def setup_gl_context_shadow(self, *args):
         self.fbo.clear_buffer()
         glEnable(GL_POLYGON_OFFSET_FILL)
-        glPolygonOffset(10, 1.0)     
-      
+        glPolygonOffset(10, 1.0)
+
         #glCullFace(GL_FRONT)
         self.fbo["pitch"] = float(0)
         self.fbo["yaw"] = float(0)
@@ -497,7 +497,7 @@ class Canvas3D(FloatLayout):
     def reset_gl_context(self, *args):
         glDisable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE)
-                
+
     def update_fbo(self, time):
         width = self.width if self.width > 1 else 100
         height = self.height if self.height > 1 else 100
@@ -758,14 +758,14 @@ class Canvas3D(FloatLayout):
                     return
             except:
                 pass
-             
- 
+
+
         t_touch = copy.copy(touch)
         t_touch = touch
         t_touch.x = int(pc[1] * PICKING_BUFFER_SIZE[0])
         t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
 
-        if hasattr(touch, 'button'):
+        if hasattr(t_touch, 'button'):
             if 'right' in t_touch.button:
                 t_touch.pos = (t_touch.x, t_touch.y)
                 return
