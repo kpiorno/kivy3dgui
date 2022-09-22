@@ -727,6 +727,9 @@ class Canvas3D(FloatLayout):
         return True
 
     def on_touch_move(self, touch):
+        # Stas: move events crashes due to a None refering in the line "if 'right' in t_touch.button"
+        return True
+
         if self.last_widget_str == "NONE":
             return False
 
@@ -766,6 +769,7 @@ class Canvas3D(FloatLayout):
         t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
 
         if hasattr(t_touch, 'button'):
+            print("++++++++++++++++++++++++++++++++++++")
             if 'right' in t_touch.button:
                 t_touch.pos = (t_touch.x, t_touch.y)
                 return
