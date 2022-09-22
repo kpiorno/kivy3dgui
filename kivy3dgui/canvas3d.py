@@ -769,7 +769,6 @@ class Canvas3D(FloatLayout):
         t_touch.y = int(pc[2] * PICKING_BUFFER_SIZE[1])
 
         if hasattr(t_touch, 'button'):
-            print("++++++++++++++++++++++++++++++++++++")
             if 'right' in t_touch.button:
                 t_touch.pos = (t_touch.x, t_touch.y)
                 return
